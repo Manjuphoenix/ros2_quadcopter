@@ -1,0 +1,180 @@
+/****************************************************************************
+ *
+ *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
+
+/**
+ * @file SubscriptionCallback.hpp
+ *
+ */
+
+#pragma once
+
+#include <uORB/SubscriptionInterval.hpp>
+#include <containers/List.hpp>
+#include <px4_platform_common/px4_work_queue/WorkItem.hpp>
+#include <drivers/drv_hrt.h>
+
+namespace uORB
+{
+
+// Subscription wrapper class with callbacks on new publications
+//
+// Uses SubscriptionIntervalAtomic because call() runs on the publishing thread
+// (synchronously from orb_publish) while the subscriber thread updates the
+// interval / last-update fields.
+class SubscriptionCallback : public SubscriptionIntervalAtomic, public ListNode<SubscriptionCallback *>
+{
+public:
+	/**
+	 * Constructor
+	 *
+	 * @param meta The uORB metadata (usually from the ORB_ID() macro) for the topic.
+	 * @param interval_us The requested maximum update interval in microseconds.
+	 * @param instance The instance for multi sub.
+	 */
+	SubscriptionCallback(const orb_metadata *meta, uint32_t interval_us = 0, uint8_t instance = 0) :
+		SubscriptionIntervalAtomic(meta, interval_us, instance)
+	{
+	}
+
+	virtual ~SubscriptionCallback()
+	{
+		unregisterCallback();
+	};
+
+	bool registerCallback();
+
+	void unregisterCallback();
+
+	/**
+	 * Change subscription instance
+	 * @param instance The new multi-Subscription instance
+	 */
+	bool ChangeInstance(uint8_t instance)
+	{
+		bool ret = false;
+
+		if (instance != get_instance()) {
+			const bool registered = _registered;
+
+			if (registered) {
+				unregisterCallback();
+			}
+
+			if (_subscription.ChangeInstance(instance)) {
+				ret = true;
+			}
+
+			if (registered) {
+				registerCallback();
+			}
+
+		} else {
+			// already on desired index
+			return true;
+		}
+
+		return ret;
+	}
+
+	virtual void call(unsigned generation) = 0;
+
+	bool registered() const { return _registered; }
+
+protected:
+
+	bool _registered{false};
+	// Node generation at our last ScheduleNow(), used by the count gate. Only ever
+	// touched from call() (which runs under the publishing node's lock, so it is
+	// serialized) - do NOT write it from the subscriber thread (e.g. in
+	// registerCallback()), or it becomes a cross-thread race. It self-initializes:
+	// the first call() sees a large delta and schedules once, then tracks normally.
+	unsigned _last_scheduled_generation{0};
+};
+
+// Subscription with callback that schedules a WorkItem
+class SubscriptionCallbackWorkItem : public SubscriptionCallback
+{
+public:
+	/**
+	 * Constructor
+	 *
+	 * @param work_item The WorkItem that will be scheduled immediately on new publications.
+	 * @param meta The uORB metadata (usually from the ORB_ID() macro) for the topic.
+	 * @param instance The instance for multi sub.
+	 */
+	SubscriptionCallbackWorkItem(px4::WorkItem *work_item, const orb_metadata *meta, uint8_t instance = 0) :
+		SubscriptionCallback(meta, 0, instance),	// interval 0
+		_work_item(work_item)
+	{
+	}
+
+	virtual ~SubscriptionCallbackWorkItem() = default;
+
+	void call(unsigned generation) override
+	{
+		// 'generation' is the publishing node's generation, handed in by the
+		// publisher - so unlike before we never read the subscriber's own cursor
+		// (_last_generation, mutated on the subscriber's thread) from here.
+		// Schedule once enough new samples have accrued since our last schedule
+		// (count gate), respecting the optional interval (interval gate).
+		const uint8_t req = _required_updates.load();
+
+		if ((generation - _last_scheduled_generation) >= req) {
+			const hrt_abstime last_update = _last_update.load();
+			const uint32_t interval_us = _interval_us.load();
+
+			if ((interval_us == 0) || (hrt_elapsed_time(&last_update) >= interval_us)) {
+				_last_scheduled_generation = generation;
+				_work_item->ScheduleNow();
+			}
+		}
+	}
+
+	/**
+	 * Optionally limit callback until more samples are available.
+	 *
+	 * @param required_updates Number of queued updates required before a callback can be called.
+	 */
+	void set_required_updates(uint8_t required_updates)
+	{
+		// TODO: constrain to queue depth?
+		_required_updates.store(required_updates);
+	}
+
+private:
+	px4::WorkItem *_work_item;
+
+	px4::atomic<uint8_t> _required_updates{0};
+};
+
+} // namespace uORB

@@ -1,0 +1,221 @@
+/****************************************************************************
+ *
+ *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
+
+/**
+ * @author RJ Gritter <rjgritter657@gmail.com>
+ */
+
+#include <drivers/drv_hrt.h>
+#include <matrix/math.hpp>
+#include <parameters/param.h>
+#include "rangefinder.hpp"
+#include <math.h>
+
+const char *const UavcanRangefinderBridge::NAME = "rangefinder";
+
+namespace
+{
+static constexpr float COARSE_ORIENTATION_LSB_RAD = M_PI_F / 12.f;
+static constexpr float ORIENTATION_TOLERANCE = 1e-5f;
+
+matrix::Eulerf uavcan_orientation_to_euler(const uavcan::CoarseOrientation &orientation)
+{
+	const float roll = orientation.fixed_axis_roll_pitch_yaw[0] * COARSE_ORIENTATION_LSB_RAD;
+	const float pitch = orientation.fixed_axis_roll_pitch_yaw[1] * COARSE_ORIENTATION_LSB_RAD;
+	const float yaw = orientation.fixed_axis_roll_pitch_yaw[2] * COARSE_ORIENTATION_LSB_RAD;
+
+	return {roll, pitch, yaw};
+}
+
+uint8_t uavcan_orientation_to_distance_sensor_orientation(const uavcan::CoarseOrientation &orientation)
+{
+	if (!orientation.orientation_defined) {
+		return distance_sensor_s::ROTATION_DOWNWARD_FACING;
+	}
+
+	// The beam runs along the sensor x-axis, so roll turns it about itself and cannot change where
+	// it points: pitch and yaw alone decide the direction. In body frame the beam is
+	// (cos(pitch)cos(yaw), cos(pitch)sin(yaw), -sin(pitch)).
+	const float pitch = orientation.fixed_axis_roll_pitch_yaw[1] * COARSE_ORIENTATION_LSB_RAD;
+	const float sin_pitch = sinf(pitch);
+
+	if (sin_pitch > 1.f - ORIENTATION_TOLERANCE) {
+		return distance_sensor_s::ROTATION_UPWARD_FACING;
+	}
+
+	if (sin_pitch < -1.f + ORIENTATION_TOLERANCE) {
+		return distance_sensor_s::ROTATION_DOWNWARD_FACING;
+	}
+
+	// Horizontal beams are representable only in 45-degree yaw steps. Beyond +-90 degrees of pitch
+	// the beam points to the far side of the vehicle, so fold that back into the azimuth.
+	if (fabsf(sin_pitch) < ORIENTATION_TOLERANCE) {
+		const float yaw = orientation.fixed_axis_roll_pitch_yaw[2] * COARSE_ORIENTATION_LSB_RAD;
+		const float azimuth = (cosf(pitch) < 0.f) ? yaw + M_PI_F : yaw;
+		const float sector = matrix::wrap(azimuth, 0.f, 2.f * M_PI_F) / (M_PI_F / 4.f);
+		const float nearest_sector = roundf(sector);
+
+		if (fabsf(sector - nearest_sector) < ORIENTATION_TOLERANCE) {
+			return static_cast<uint8_t>(lroundf(nearest_sector) % 8);
+		}
+	}
+
+	return distance_sensor_s::ROTATION_CUSTOM;
+}
+} // namespace
+
+UavcanRangefinderBridge::UavcanRangefinderBridge(uavcan::INode &node, NodeInfoPublisher *node_info_publisher) :
+	UavcanSensorBridgeBase("uavcan_rangefinder", ORB_ID(distance_sensor), node_info_publisher),
+	_sub_range_data(node)
+{
+	set_device_type(DRV_DIST_DEVTYPE_UAVCAN);
+}
+
+int UavcanRangefinderBridge::init()
+{
+	// Initialize min/max range from params
+	param_get(param_find("UAVCAN_RNG_MIN"), &_range_min_m);
+	param_get(param_find("UAVCAN_RNG_MAX"), &_range_max_m);
+
+	int res = _sub_range_data.start(RangeCbBinder(this, &UavcanRangefinderBridge::range_sub_cb));
+
+	if (res < 0) {
+		DEVICE_LOG("failed to start uavcan sub: %d", res);
+		return res;
+	}
+
+	return 0;
+}
+
+void UavcanRangefinderBridge::range_sub_cb(const
+		uavcan::ReceivedDataStructure<uavcan::equipment::range_sensor::Measurement> &msg)
+{
+	uavcan_bridge::Channel *channel = get_channel_for_node(msg.getSrcNodeID().get(), msg.getIfaceIndex());
+
+	if (channel == nullptr || channel->instance < 0) {
+		// Something went wrong - no channel to publish on; return
+		return;
+	}
+
+	// Cast our generic CDev pointer to the sensor-specific driver class
+	PX4Rangefinder *rangefinder = (PX4Rangefinder *)channel->h_driver;
+
+	if (rangefinder == nullptr) {
+		return;
+	}
+
+	const int8_t channel_idx = get_channel_index_for_node(msg.getSrcNodeID().get());
+
+	if (channel_idx >= 0 && !_channel_initialized[channel_idx]) {
+
+		uint8_t rangefinder_type = 0;
+
+		switch (msg.sensor_type) {
+		case uavcan::equipment::range_sensor::Measurement::SENSOR_TYPE_SONAR:
+			rangefinder_type = distance_sensor_s::MAV_DISTANCE_SENSOR_ULTRASOUND;
+			break;
+
+		case uavcan::equipment::range_sensor::Measurement::SENSOR_TYPE_RADAR:
+			rangefinder_type = distance_sensor_s::MAV_DISTANCE_SENSOR_RADAR;
+			break;
+
+		case uavcan::equipment::range_sensor::Measurement::SENSOR_TYPE_LIDAR:
+		case uavcan::equipment::range_sensor::Measurement::SENSOR_TYPE_UNDEFINED:
+		default:
+			rangefinder_type = distance_sensor_s::MAV_DISTANCE_SENSOR_LASER;
+			break;
+		}
+
+		rangefinder->set_rangefinder_type(rangefinder_type);
+		rangefinder->set_fov(msg.field_of_view);
+		rangefinder->set_min_distance(_range_min_m);
+		rangefinder->set_max_distance(_range_max_m);
+
+		_channel_initialized[channel_idx] = true;
+	}
+
+	const uint8_t orientation = uavcan_orientation_to_distance_sensor_orientation(msg.beam_orientation_in_body_frame);
+	rangefinder->set_orientation(orientation);
+
+	// TOO_CLOSE, TOO_FAR and UNDEFINED readings do not carry a usable range
+	// value: publish them as invalid (0) rather than unknown (-1), which
+	// consumers like the EKF would otherwise accept and fuse.
+	int8_t quality = 0;
+
+	if (msg.reading_type == uavcan::equipment::range_sensor::Measurement::READING_TYPE_VALID_RANGE) {
+		quality = 100;
+	}
+
+	const hrt_abstime timestamp_sample = (msg.timestamp.usec > 0) ? msg.timestamp.usec : hrt_absolute_time();
+
+	if (orientation == distance_sensor_s::ROTATION_CUSTOM) {
+		const matrix::Quatf q_sensor{uavcan_orientation_to_euler(msg.beam_orientation_in_body_frame)};
+		float q[4];
+		q_sensor.copyTo(q);
+		rangefinder->update(timestamp_sample, msg.range, quality, q);
+
+	} else {
+		rangefinder->update(timestamp_sample, msg.range, quality);
+	}
+
+	// Register device capability if not already done
+	if (_node_info_publisher != nullptr) {
+		_node_info_publisher->registerDeviceCapability(msg.getSrcNodeID().get(),
+				rangefinder->get_device_id(), NodeInfoPublisher::DeviceCapability::RANGEFINDER);
+	}
+}
+
+int UavcanRangefinderBridge::init_driver(uavcan_bridge::Channel *channel)
+{
+	// Build device ID using node_id and interface index
+	uint32_t device_id = make_uavcan_device_id(static_cast<uint8_t>(channel->node_id), channel->iface_index);
+
+	channel->h_driver = new PX4Rangefinder(device_id, distance_sensor_s::ROTATION_DOWNWARD_FACING);
+
+	if (channel->h_driver == nullptr) {
+		return PX4_ERROR;
+	}
+
+	PX4Rangefinder *rangefinder = (PX4Rangefinder *)channel->h_driver;
+
+	channel->instance = rangefinder->get_instance();
+
+	if (channel->instance < 0) {
+		PX4_ERR("UavcanRangefinder: Unable to get an instance");
+		delete rangefinder;
+		channel->h_driver = nullptr;
+		return PX4_ERROR;
+	}
+
+	return PX4_OK;
+}

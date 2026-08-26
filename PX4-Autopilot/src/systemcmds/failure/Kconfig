@@ -1,0 +1,13 @@
+menuconfig SYSTEMCMDS_FAILURE
+	bool "failure"
+	default n
+	depends on MODULES_FAILURE_INJECTION_MANAGER
+	---help---
+		Enable support for failure
+
+menuconfig USER_FAILURE
+	bool "failure running as userspace module"
+	default y
+	depends on BOARD_PROTECTED && SYSTEMCMDS_FAILURE
+	---help---
+		Put failure in userspace memory

@@ -1,0 +1,92 @@
+# Орбіта (Мультикоптер)
+
+<img src="../../assets/site/difficulty_easy.png" title="Easy to fly" width="30px" />&nbsp;<img src="../../assets/site/position_fixed.svg" title="Position fix required (e.g. GPS)" width="30px" />
+
+The _Orbit_ guided flight mode allows you to command a multicopter (or VTOL in multicopter mode) to fly in a circle at a particular location, by [default](https://mavlink.io/en/messages/common.html#ORBIT_YAW_BEHAVIOUR) yawing so that it always faces towards the center.
+
+::: info
+
+- Режим автоматичний - для керування апаратом не потрібно втручання користувача.
+- Режим потребує принаймні дійсної локальної оцінки позиції (не потребує глобальної позиції).
+  - Літаючі транспортні засоби перейдуть в режим аварійної безпеки, якщо втратять оцінку положення.
+- Mode prevents arming (vehicle cannot be armed while this mode is selected).
+- Режим вимагає, щоб швидкість вітру та час польоту були в межах допустимих значень (вказано через параметри).
+- Mode is currently only supported on multicopter (or VTOL in MC mode).
+- Рух палиці RC може контролювати підйом/спуск та швидкість та напрямок оберту.
+- Mode can be triggered using the [MAV_CMD_DO_ORBIT](https://mavlink.io/en/messages/common.html#MMAV_CMD_DO_ORBIT) MAVLink command.
+
+:::
+
+<!-- AUTO-GENERATED: mode_requirements_rotary_wing_orbit -->
+
+### Mode Requirements
+
+The following requirements must be met to arm in this mode, or to switch to this mode when it is armed.
+
+- [`mode_req_angular_velocity`](../flight_modes/mode_requirements.md#mode_req_angular_velocity) — Angular velocity
+- [`mode_req_attitude`](../flight_modes/mode_requirements.md#mode_req_attitude) — Attitude/pose
+- [`mode_req_local_alt`](../flight_modes/mode_requirements.md#mode_req_local_alt) — Local altitude relative to EKF2 origin ('0') position
+- [`mode_req_local_position`](../flight_modes/mode_requirements.md#mode_req_local_position) — Position relative to EKF2 origin ('0') point
+- [`mode_req_prevent_arming`](../flight_modes/mode_requirements.md#mode_req_prevent_arming) — Mode prevents arming
+- [`mode_req_wind_and_flight_time_compliance`](../flight_modes/mode_requirements.md#mode_req_wind_and_flight_time_compliance) — Safety compliance limits on wind and flight time.
+
+<!-- END AUTO-GENERATED: mode_requirements_rotary_wing_orbit -->
+
+## Загальний огляд
+
+![Orbit Mode - MC](../../assets/flying/orbit.jpg)
+
+_QGroundControl_ (or other compatible GCS or MAVLink API) is _required_ to enable the mode, and to set the center position, initial radius and altitude of the orbit.
+Після активації транспортний засіб полетить якнайшвидше до найближчої точки на запланованій траєкторії кола і виконає повільний (1 м/с) ходовий оберт навколо запланованого кола за годинниковою стрілкою, обертаючись до центру.
+
+Instructions for how to start an orbit can be found here: [FlyView > Orbit Location](https://docs.qgroundcontrol.com/master/en/qgc-user-guide/fly_view/fly_view.html#orbit) (_QGroundControl_ guide).
+
+:::info
+The use of an RC control is _optional_.
+Якщо відсутній керування RC, орбіта буде продовжуватися, як описано вище.
+RC керування не може бути використане для запуску режиму (якщо ви перемикаєтеся на режим через RC, він буде просто працювати у мирі).
+:::
+
+RC керування може бути використане для зміни висоти орбіти, радіусу, швидкості та напрямку обертання:
+
+- **Left stick:**
+  - _up/down:_ controls speed of ascent/descent, as in [Position mode](../flight_modes_mc/position.md).
+    Коли в центрі мертвої зони, висота заблокована.
+  - _left/right:_ no effect.
+- **Right stick:**
+  - _left/right:_ controls acceleration of orbit in clockwise/counter-clockwise directions.
+    Коли центрується, поточна швидкість заблокована.
+    - Maximum velocity is [MPC_XY_VEL_MAX](#MPC_XY_VEL_MAX) and further limited to keep the centripetal acceleration below 2m/s^2.
+  - _up/down:_ controls orbit radius (smaller/bigger). Коли центрується, поточний радіус заблокований.
+    - Мінімальний радіус - 1м.
+      Maximum radius is [MC_ORBIT_RAD_MAX](#MC_ORBIT_RAD_MAX).
+
+The diagram below shows the mode behaviour visually (for a [mode 2 transmitter](../getting_started/rc_transmitter_receiver.md#transmitter_modes)).
+
+![Orbit Mode - MC](../../assets/flight_modes/orbit_mc.png)
+
+Режим можна припинити, переключившись на будь-який інший режим польоту (використовуючи RC або QGC).
+
+## Параметри/Обмеження
+
+Режим впливає на наступні параметри:
+
+| Parameter                                                                                                                                                                  | Опис                                                                                                                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <a id="MC_ORBIT_RAD_MAX"></a>[MC_ORBIT_RAD_MAX](../advanced_config/parameter_reference.md#MC_ORBIT_RAD_MAX) | Maximum radius of orbit. Default: 1000m.                                                                         |
+| <a id="MC_ORBIT_YAW_MOD"></a>[MC_ORBIT_YAW_MOD](../advanced_config/parameter_reference.md#MC_ORBIT_YAW_MOD) | Yaw behaviour during orbit flight. Default: Front to Circle Center.                                              |
+| <a id="MPC_XY_VEL_MAX"></a>[MPC_XY_VEL_MAX](../advanced_config/parameter_reference.md#MPC_XY_VEL_MAX)       | Tangential speed limit. Stick input won't accelerate beyond this limit. Higher commands are accepted but capped. |
+
+Наступні обмеження зафіксовані у вихідному коді:
+
+- Initial/default rotation is 1m/s in a clockwise direction.
+- The maximum acceleration is limited to 2m/s^2, with priority on keeping the commanded circle trajectory rather than commanded ground speed (i.e. the vehicle will slow down in order to achieve the correct circle if the acceleration exceeds 2m/s^2).
+
+## Повідомлення MAVLink (розробники)
+
+Режим орбіти використовує наступні команди MAVLink:
+
+- [MAV_CMD_DO_ORBIT](https://mavlink.io/en/messages/common.html#MAV_CMD_DO_ORBIT) - Start an orbit with specified center point, radius, direction, altitude, speed and [yaw direction](https://mavlink.io/en/messages/common.html#ORBIT_YAW_BEHAVIOUR).
+  The same defaults and limits apply.
+  When exceeding limits the command is accepted but velocity and radius capped.
+- [ORBIT_EXECUTION_STATUS](https://mavlink.io/en/messages/common.html#ORBIT_EXECUTION_STATUS) - Orbit status emitted during orbit to update GCS of current orbit parameters (these may be changed by the RC controller).

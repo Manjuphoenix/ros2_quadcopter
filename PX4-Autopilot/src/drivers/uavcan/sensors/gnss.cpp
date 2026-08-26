@@ -1,0 +1,815 @@
+/****************************************************************************
+ *
+ *   Copyright (c) 2014-2022 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
+
+/**
+ * @file gnss.cpp
+ *
+ * @author Pavel Kirienko <pavel.kirienko@gmail.com>
+ * @author Andrew Chambers <achamber@gmail.com>
+ *
+ */
+
+#include "gnss.hpp"
+
+#include <cstdint>
+
+#include <drivers/drv_hrt.h>
+#include <systemlib/err.h>
+#include <systemlib/system_time_source.h>
+#include <mathlib/mathlib.h>
+#include <matrix/math.hpp>
+#include <lib/parameters/param.h>
+
+using namespace time_literals;
+
+const char *const UavcanGnssBridge::NAME = "gnss";
+
+UavcanGnssBridge::UavcanGnssBridge(uavcan::INode &node, NodeInfoPublisher *node_info_publisher) :
+	UavcanSensorBridgeBase("uavcan_gnss", ORB_ID(sensor_gps), node_info_publisher),
+	_node(node),
+	_sub_auxiliary(node),
+	_sub_fix(node),
+	_sub_fix2(node),
+	_sub_gnss_heading(node),
+	_sub_moving_baseline_data(node),
+	_pub_moving_baseline_data(node),
+	_pub_rtcm_stream(node),
+	_channel_using_fix2(new bool[_max_channels])
+{
+	for (uint8_t i = 0; i < _max_channels; i++) {
+		_channel_using_fix2[i] = false;
+	}
+
+	set_device_type(DRV_GPS_DEVTYPE_UAVCAN);
+}
+
+UavcanGnssBridge::~UavcanGnssBridge()
+{
+	delete [] _channel_using_fix2;
+	perf_free(_rtcm_stream_pub_perf);
+	perf_free(_rtcm_stream_pub_failed_perf);
+	perf_free(_moving_baseline_data_pub_perf);
+	perf_free(_moving_baseline_data_pub_failed_perf);
+	perf_free(_moving_baseline_data_sub_perf);
+}
+
+int
+UavcanGnssBridge::init()
+{
+	int res = _sub_auxiliary.start(AuxiliaryCbBinder(this, &UavcanGnssBridge::gnss_auxiliary_sub_cb));
+
+	if (res < 0) {
+		PX4_WARN("GNSS auxiliary sub failed %i", res);
+		return res;
+	}
+
+	res = _sub_fix.start(FixCbBinder(this, &UavcanGnssBridge::gnss_fix_sub_cb));
+
+	if (res < 0) {
+		PX4_WARN("GNSS fix sub failed %i", res);
+		return res;
+	}
+
+	res = _sub_fix2.start(Fix2CbBinder(this, &UavcanGnssBridge::gnss_fix2_sub_cb));
+
+	if (res < 0) {
+		PX4_WARN("GNSS fix2 sub failed %i", res);
+		return res;
+	}
+
+	res = _sub_gnss_heading.start(RelPosHeadingCbBinder(this, &UavcanGnssBridge::gnss_relative_sub_cb));
+
+	if (res < 0) {
+		PX4_WARN("GNSS relative sub failed %i", res);
+		return res;
+	}
+
+	// UAVCAN_PUB_RTCM
+	int32_t uavcan_pub_rtcm = 0;
+	param_get(param_find("UAVCAN_PUB_RTCM"), &uavcan_pub_rtcm);
+
+	if (uavcan_pub_rtcm == 1) {
+		_publish_rtcm_stream = true;
+		_pub_rtcm_stream.setPriority(uavcan::TransferPriority::NumericallyMax);
+		_rtcm_stream_pub_perf = perf_alloc(PC_INTERVAL, "uavcan: gnss: rtcm stream pub");
+		_rtcm_stream_pub_failed_perf = perf_alloc(PC_COUNT, "uavcan: gnss: rtcm stream pub failed");
+	}
+
+	// UAVCAN_PUB_MBD
+	int32_t uavcan_pub_mbd = 0;
+	param_get(param_find("UAVCAN_PUB_MBD"), &uavcan_pub_mbd);
+
+	if (uavcan_pub_mbd == 1) {
+		_publish_moving_baseline_data = true;
+		_pub_moving_baseline_data.setPriority(uavcan::TransferPriority::NumericallyMax);
+		_moving_baseline_data_pub_perf = perf_alloc(PC_INTERVAL, "uavcan: gnss: moving baseline data rtcm stream pub");
+		_moving_baseline_data_pub_failed_perf = perf_alloc(PC_COUNT, "uavcan: gnss: moving baseline data rtcm stream pub failed");
+	}
+
+	// UAVCAN_SUB_MBD
+	int32_t uavcan_sub_mbd = 0;
+	param_get(param_find("UAVCAN_SUB_MBD"), &uavcan_sub_mbd);
+
+	if (uavcan_sub_mbd == 1) {
+		res = _sub_moving_baseline_data.start(MovingBaselineDataCbBinder(this, &UavcanGnssBridge::moving_baseline_data_sub_cb));
+		_moving_baseline_data_sub_perf = perf_alloc(PC_INTERVAL, "uavcan: gnss: moving baseline data rtcm stream sub");
+	}
+
+	return res;
+}
+
+void
+UavcanGnssBridge::gnss_auxiliary_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::gnss::Auxiliary> &msg)
+{
+	// store latest hdop and vdop for use in process_fixx();
+	_last_gnss_auxiliary_timestamp = hrt_absolute_time();
+	_last_gnss_auxiliary_hdop = msg.hdop;
+	_last_gnss_auxiliary_vdop = msg.vdop;
+}
+
+void
+UavcanGnssBridge::gnss_fix_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::gnss::Fix> &msg)
+{
+	// Check to see if this node is also publishing a Fix2 message.
+	// If so, ignore the old "Fix" message for this node.
+	const int8_t ch = get_channel_index_for_node(msg.getSrcNodeID().get());
+
+	if (ch > -1 && _channel_using_fix2[ch]) {
+		return;
+	}
+
+	uint8_t fix_type = msg.status;
+
+	const bool valid_pos_cov = !msg.position_covariance.empty();
+	const bool valid_vel_cov = !msg.velocity_covariance.empty();
+
+	float pos_cov[9];
+	msg.position_covariance.unpackSquareMatrix(pos_cov);
+
+	float vel_cov[9];
+	msg.velocity_covariance.unpackSquareMatrix(vel_cov);
+
+	process_fixx(msg, fix_type, pos_cov, vel_cov, valid_pos_cov, valid_vel_cov, NAN, NAN, NAN, -1, -1, 0, 0);
+}
+
+void
+UavcanGnssBridge::gnss_fix2_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::gnss::Fix2> &msg)
+{
+	using uavcan::equipment::gnss::Fix2;
+
+	const int8_t ch = get_channel_index_for_node(msg.getSrcNodeID().get());
+
+	if (ch > -1 && !_channel_using_fix2[ch]) {
+		PX4_WARN("GNSS Fix2 msg detected for ch %d; disabling Fix msg for this node", ch);
+		_channel_using_fix2[ch] = true;
+	}
+
+	uint8_t fix_type = msg.status;
+
+	switch (msg.mode) {
+	case Fix2::MODE_DGPS:
+		fix_type = 4; // RTCM code differential
+		break;
+
+	case Fix2::MODE_RTK:
+		switch (msg.sub_mode) {
+		case Fix2::SUB_MODE_RTK_FLOAT:
+			fix_type = 5; // RTK float
+			break;
+
+		case Fix2::SUB_MODE_RTK_FIXED:
+			fix_type = 6; // RTK fixed
+			break;
+		}
+
+		break;
+	}
+
+	float pos_cov[9] {};
+	float vel_cov[9] {};
+	bool valid_covariances = true;
+
+	switch (msg.covariance.size()) {
+	case 1: {
+			// Scalar matrix
+			const auto x = msg.covariance[0];
+
+			pos_cov[0] = x;
+			pos_cov[4] = x;
+			pos_cov[8] = x;
+
+			vel_cov[0] = x;
+			vel_cov[4] = x;
+			vel_cov[8] = x;
+		}
+		break;
+
+	case 6: {
+			// Diagonal matrix (the most common case)
+			pos_cov[0] = msg.covariance[0];
+			pos_cov[4] = msg.covariance[1];
+			pos_cov[8] = msg.covariance[2];
+
+			vel_cov[0] = msg.covariance[3];
+			vel_cov[4] = msg.covariance[4];
+			vel_cov[8] = msg.covariance[5];
+
+		}
+		break;
+
+
+	case 21: {
+			// Upper triangular matrix.
+			// This code has been carefully optimized by hand. We could use unpackSquareMatrix(), but it's slow.
+			// Sub-matrix indexes (empty squares contain velocity-position covariance data):
+			// 0  1  2
+			// 1  6  7
+			// 2  7 11
+			//         15 16 17
+			//         16 18 19
+			//         17 19 20
+			pos_cov[0] = msg.covariance[0];
+			pos_cov[1] = msg.covariance[1];
+			pos_cov[2] = msg.covariance[2];
+			pos_cov[3] = msg.covariance[1];
+			pos_cov[4] = msg.covariance[6];
+			pos_cov[5] = msg.covariance[7];
+			pos_cov[6] = msg.covariance[2];
+			pos_cov[7] = msg.covariance[7];
+			pos_cov[8] = msg.covariance[11];
+
+			vel_cov[0] = msg.covariance[15];
+			vel_cov[1] = msg.covariance[16];
+			vel_cov[2] = msg.covariance[17];
+			vel_cov[3] = msg.covariance[16];
+			vel_cov[4] = msg.covariance[18];
+			vel_cov[5] = msg.covariance[19];
+			vel_cov[6] = msg.covariance[17];
+			vel_cov[7] = msg.covariance[19];
+			vel_cov[8] = msg.covariance[20];
+		}
+
+	/* FALLTHROUGH */
+	case 36: {
+			// Full matrix 6x6.
+			// This code has been carefully optimized by hand. We could use unpackSquareMatrix(), but it's slow.
+			// Sub-matrix indexes (empty squares contain velocity-position covariance data):
+			//  0  1  2
+			//  6  7  8
+			// 12 13 14
+			//          21 22 23
+			//          27 28 29
+			//          33 34 35
+			pos_cov[0] = msg.covariance[0];
+			pos_cov[1] = msg.covariance[1];
+			pos_cov[2] = msg.covariance[2];
+			pos_cov[3] = msg.covariance[6];
+			pos_cov[4] = msg.covariance[7];
+			pos_cov[5] = msg.covariance[8];
+			pos_cov[6] = msg.covariance[12];
+			pos_cov[7] = msg.covariance[13];
+			pos_cov[8] = msg.covariance[14];
+
+			vel_cov[0] = msg.covariance[21];
+			vel_cov[1] = msg.covariance[22];
+			vel_cov[2] = msg.covariance[23];
+			vel_cov[3] = msg.covariance[27];
+			vel_cov[4] = msg.covariance[28];
+			vel_cov[5] = msg.covariance[29];
+			vel_cov[6] = msg.covariance[33];
+			vel_cov[7] = msg.covariance[34];
+			vel_cov[8] = msg.covariance[35];
+		}
+
+	/* FALLTHROUGH */
+	default: {
+			// Either empty or invalid sized, interpret as zero matrix
+			valid_covariances = false;
+			break;	// Nothing to do
+		}
+	}
+
+	// Invalidate the heading fields
+	float heading = NAN;
+	float heading_offset = NAN;
+	float heading_accuracy = NAN;
+
+	int32_t noise_per_ms = -1;
+	int32_t jamming_indicator = -1;
+	uint8_t jamming_state = 0;
+	uint8_t spoofing_state = 0;
+
+	// TODO: this hack should eventually be removed now that we have the RelPosHeading message
+	// HACK: Use ecef_position_velocity for heading
+	if (!msg.ecef_position_velocity.empty() && !_rel_heading_valid) {
+		if (!std::isnan(msg.ecef_position_velocity[0].velocity_xyz[0])) {
+			heading = msg.ecef_position_velocity[0].velocity_xyz[0];
+		}
+
+		if (!std::isnan(msg.ecef_position_velocity[0].velocity_xyz[1])) {
+			heading_offset = msg.ecef_position_velocity[0].velocity_xyz[1];
+		}
+
+		if (!std::isnan(msg.ecef_position_velocity[0].velocity_xyz[2])) {
+			heading_accuracy = msg.ecef_position_velocity[0].velocity_xyz[2];
+		}
+
+		noise_per_ms = msg.ecef_position_velocity[0].position_xyz_mm[0];
+		jamming_indicator = msg.ecef_position_velocity[0].position_xyz_mm[1];
+
+		jamming_state = msg.ecef_position_velocity[0].position_xyz_mm[2] >> 8;
+		spoofing_state = msg.ecef_position_velocity[0].position_xyz_mm[2] & 0xFF;
+	}
+
+	process_fixx(msg, fix_type, pos_cov, vel_cov, valid_covariances, valid_covariances, heading, heading_offset,
+		     heading_accuracy, noise_per_ms, jamming_indicator, jamming_state, spoofing_state);
+}
+
+void UavcanGnssBridge::gnss_relative_sub_cb(const
+		uavcan::ReceivedDataStructure<ardupilot::gnss::RelPosHeading> &msg)
+{
+	_rel_heading_valid = msg.reported_heading_acc_available;
+	_rel_heading = math::radians(msg.reported_heading_deg);
+	_rel_heading_accuracy = math::radians(msg.reported_heading_acc_deg);
+
+}
+
+void UavcanGnssBridge::moving_baseline_data_sub_cb(const
+		uavcan::ReceivedDataStructure<ardupilot::gnss::MovingBaselineData> &msg)
+{
+	perf_count(_moving_baseline_data_sub_perf);
+
+	size_t total_bytes = msg.data.size();
+	size_t written = 0;
+
+	while (written < total_bytes) {
+		gps_dump_s dump = {};
+		dump.timestamp = hrt_absolute_time();
+
+		DeviceId device_id = {};
+		device_id.devid_s.bus_type = DeviceBusType::DeviceBusType_UAVCAN;
+		device_id.devid_s.bus = 0;
+		device_id.devid_s.address = msg.getSrcNodeID().get() & 0xFF;
+		device_id.devid_s.devtype = DRV_GPS_DEVTYPE_UAVCAN;
+
+		dump.instance = 0; // TODO: How can we determine the instance? Startup order of CANnodes is non-deterministic.
+		dump.device_id = device_id.devid;
+
+		size_t remaining = total_bytes - written;
+		size_t write_len = remaining < sizeof(dump.data) ? remaining : sizeof(dump.data);
+
+		memcpy(dump.data, msg.data.begin() + written, write_len);
+		dump.len = write_len;
+		dump.len &= 0x7F; // MSB of len is direction - 0 is from the device
+
+		written += write_len;
+
+		_gps_dump_pub.publish(dump);
+	}
+}
+
+template <typename FixType>
+void UavcanGnssBridge::process_fixx(const uavcan::ReceivedDataStructure<FixType> &msg,
+				    uint8_t fix_type,
+				    const float (&pos_cov)[9], const float (&vel_cov)[9],
+				    const bool valid_pos_cov, const bool valid_vel_cov,
+				    const float heading, const float heading_offset,
+				    const float heading_accuracy, const int32_t noise_per_ms,
+				    const int32_t jamming_indicator, const uint8_t jamming_state,
+				    const uint8_t spoofing_state)
+{
+	sensor_gps_s sensor_gps{};
+
+	sensor_gps.device_id = make_uavcan_device_id(msg);
+
+	// Register GPS capability with NodeInfoPublisher after first successful message
+	if (_node_info_publisher != nullptr) {
+		_node_info_publisher->registerDeviceCapability(msg.getSrcNodeID().get(),
+				sensor_gps.device_id,
+				NodeInfoPublisher::DeviceCapability::GPS);
+	}
+
+	/*
+	 * FIXME HACK
+	 * There used to be the following line of code:
+	 * 	sensor_gps.timestamp_position = msg.getMonotonicTimestamp().toUSec();
+	 * It stopped working when the time sync feature has been introduced, because it caused libuavcan
+	 * to use an independent time source (based on hardware TIM5) instead of HRT.
+	 * The proper solution is to be developed.
+	 */
+	sensor_gps.timestamp = hrt_absolute_time();
+
+	sensor_gps.latitude_deg         = msg.latitude_deg_1e8 / 1e8;
+	sensor_gps.longitude_deg        = msg.longitude_deg_1e8 / 1e8;
+	sensor_gps.altitude_msl_m       = msg.height_msl_mm / 1e3;
+	sensor_gps.altitude_ellipsoid_m = msg.height_ellipsoid_mm / 1e3;
+
+	if (valid_pos_cov) {
+		// Horizontal position uncertainty
+		const float horizontal_pos_variance = math::max(pos_cov[0], pos_cov[4]);
+		sensor_gps.eph = (horizontal_pos_variance > 0) ? sqrtf(horizontal_pos_variance) : -1.0F;
+
+		// Vertical position uncertainty
+		sensor_gps.epv = (pos_cov[8] > 0) ? sqrtf(pos_cov[8]) : -1.0F;
+
+	} else {
+		sensor_gps.eph = -1.0F;
+		sensor_gps.epv = -1.0F;
+	}
+
+	if (valid_vel_cov) {
+		sensor_gps.s_variance_m_s = math::max(vel_cov[0], vel_cov[4], vel_cov[8]);
+
+		/* There is a nonlinear relationship between the velocity vector and the heading.
+		 * Use Jacobian to transform velocity covariance to heading covariance
+		 *
+		 * Nonlinear equation:
+		 * heading = atan2(vel_e_m_s, vel_n_m_s)
+		 * For math, see http://en.wikipedia.org/wiki/Atan2#Derivative
+		 *
+		 * To calculate the variance of heading from the variance of velocity,
+		 * cov(heading) = J(velocity)*cov(velocity)*J(velocity)^T
+		 */
+		float vel_n = msg.ned_velocity[0];
+		float vel_e = msg.ned_velocity[1];
+		float vel_n_sq = vel_n * vel_n;
+		float vel_e_sq = vel_e * vel_e;
+		sensor_gps.c_variance_rad =
+			(vel_e_sq * vel_cov[0] +
+			 -2 * vel_n * vel_e * vel_cov[1] +	// Covariance matrix is symmetric
+			 vel_n_sq * vel_cov[4]) / ((vel_n_sq + vel_e_sq) * (vel_n_sq + vel_e_sq));
+
+	} else {
+		sensor_gps.s_variance_m_s = -1.0F;
+		sensor_gps.c_variance_rad = -1.0F;
+	}
+
+	sensor_gps.fix_type = fix_type;
+
+	sensor_gps.vel_n_m_s = msg.ned_velocity[0];
+	sensor_gps.vel_e_m_s = msg.ned_velocity[1];
+	sensor_gps.vel_d_m_s = msg.ned_velocity[2];
+	sensor_gps.vel_m_s = matrix::Vector3f(msg.ned_velocity[0], msg.ned_velocity[1], msg.ned_velocity[2]).norm();
+	sensor_gps.cog_rad = atan2f(sensor_gps.vel_e_m_s, sensor_gps.vel_n_m_s);
+	sensor_gps.vel_ned_valid = true;
+
+	sensor_gps.timestamp_time_relative = 0;
+
+	const uint64_t gnss_ts_usec = uavcan::UtcTime(msg.gnss_timestamp).toUSec();
+
+	switch (msg.gnss_time_standard) {
+	case FixType::GNSS_TIME_STANDARD_UTC:
+		sensor_gps.time_utc_usec = gnss_ts_usec;
+		break;
+
+	case FixType::GNSS_TIME_STANDARD_GPS:
+		if (msg.num_leap_seconds > 0) {
+			sensor_gps.time_utc_usec = gnss_ts_usec - msg.num_leap_seconds + 9;
+		}
+
+		break;
+
+	case FixType::GNSS_TIME_STANDARD_TAI:
+		if (msg.num_leap_seconds > 0) {
+			sensor_gps.time_utc_usec = gnss_ts_usec - msg.num_leap_seconds - 10;
+		}
+
+		break;
+
+	default:
+		break;
+	}
+
+	// Recover the navigation epoch in HRT: map msg.timestamp (node send UTC)
+	// into HRT, then subtract (msg.timestamp - msg.gnss_timestamp), which is
+	// the node-measured receiver processing delay. Nodes that leave
+	// msg.timestamp unset or on a non-UTC timebase fail the guard and fall
+	// through to the SENS_GPS*_DELAY path in VehicleGPSPosition.
+	const uint64_t msg_ts_usec = uavcan::UtcTime(msg.timestamp).toUSec();
+
+	// Sanity-bound the node-measured processing delay before it drives the clock
+	// estimator: a remote UTC discontinuity (leap second, receiver glitch) must
+	// not pin the offset low for the rest of the flight. Implausible values fall
+	// through to the SENS_GPS*_DELAY path.
+	static constexpr uint64_t kMaxProcessingDelayUs = 500'000;
+
+	if (msg_ts_usec > gnss_ts_usec && gnss_ts_usec > 0
+	    && (msg_ts_usec - gnss_ts_usec) < kMaxProcessingDelayUs) {
+		const int node_id = msg.getSrcNodeID().get();
+		ClockOffsetEstimator *estimator = nullptr;
+
+		for (auto &slot : _clock_estimator_slots) {
+			if (slot.node_id == node_id) {
+				estimator = &slot.estimator;
+				break;
+			}
+		}
+
+		if (estimator == nullptr) {
+			for (auto &slot : _clock_estimator_slots) {
+				if (slot.node_id < 0) {
+					slot.node_id = node_id;
+					estimator = &slot.estimator;
+					break;
+				}
+			}
+		}
+
+		if (estimator != nullptr) {
+			const hrt_abstime send_hrt = estimator->toLocal(msg_ts_usec, sensor_gps.timestamp);
+
+			if (send_hrt > 0) {
+				const int64_t processing_us = static_cast<int64_t>(msg_ts_usec - gnss_ts_usec);
+				const int64_t pvt_hrt = static_cast<int64_t>(send_hrt) - processing_us;
+
+				if (pvt_hrt > 0 && pvt_hrt < static_cast<int64_t>(sensor_gps.timestamp)) {
+					sensor_gps.timestamp_sample = static_cast<hrt_abstime>(pvt_hrt);
+				}
+			}
+		}
+	}
+
+	// If we haven't already done so, set the system clock using GPS data
+	if (sensor_gps.time_utc_usec != 0 && (fix_type >= sensor_gps_s::FIX_TYPE_2D) && !_system_clock_set) {
+		int32_t sys_time_src = 0;
+		param_get(param_find("SYS_TIME_SRC"), &sys_time_src);
+
+		if (sys_time_src & SYS_TIME_SRC_GPS) {
+			timespec ts{};
+
+			// get the whole microseconds
+			ts.tv_sec = sensor_gps.time_utc_usec / 1000000ULL;
+
+			// get the remainder microseconds and convert to nanoseconds
+			ts.tv_nsec = (sensor_gps.time_utc_usec % 1000000ULL) * 1000;
+
+			px4_clock_settime(CLOCK_REALTIME, &ts);
+		}
+
+		_system_clock_set = true;
+	}
+
+	sensor_gps.satellites_used = msg.sats_used;
+
+	if (hrt_elapsed_time(&_last_gnss_auxiliary_timestamp) < 2_s) {
+		sensor_gps.hdop = _last_gnss_auxiliary_hdop;
+		sensor_gps.vdop = _last_gnss_auxiliary_vdop;
+
+	} else {
+		// Using PDOP for HDOP and VDOP
+		// Relevant discussion: https://github.com/PX4/Firmware/issues/5153
+		sensor_gps.hdop = msg.pdop;
+		sensor_gps.vdop = msg.pdop;
+	}
+
+	if (_rel_heading_valid) {
+		sensor_gps.heading = _rel_heading;
+		sensor_gps.heading_offset = NAN;
+		sensor_gps.heading_accuracy = _rel_heading_accuracy;
+
+		_rel_heading = NAN;
+		_rel_heading_accuracy = NAN;
+		_rel_heading_valid = false;
+
+	} else {
+		sensor_gps.heading = heading;
+		sensor_gps.heading_offset = heading_offset;
+		sensor_gps.heading_accuracy = heading_accuracy;
+	}
+
+	sensor_gps.noise_per_ms = noise_per_ms;
+	sensor_gps.jamming_indicator = jamming_indicator;
+	sensor_gps.jamming_state = jamming_state;
+	sensor_gps.spoofing_state = spoofing_state;
+
+	sensor_gps.selected_rtcm_instance = _selected_rtcm_instance;
+	sensor_gps.rtcm_injection_rate = _rtcm_injection_rate;
+
+	_failure_config.update();
+
+	const int node_id = msg.getSrcNodeID().get();
+	const int8_t channel = get_channel_index_for_node(node_id);
+	const int instance = get_orb_instance_for_node(node_id);
+
+	if (channel >= 0 && instance >= 0
+	    && !failure_injection::process_gnss(_failure_config, instance, sensor_gps, _stuck[channel])) {
+		return;
+	}
+
+	publish(msg.getSrcNodeID().get(), &sensor_gps);
+}
+
+void UavcanGnssBridge::update()
+{
+	handleInjectDataTopic();
+}
+
+// Drains rtcm_corrections (fixed-base RTCM from a GCS over MAVLink, or CAN nodes) to
+// uavcan::RTCMStream. Several sources may be active (one uORB instance each); switch to a
+// different instance if the selected one goes stale.
+void UavcanGnssBridge::drainRtcmCorrections()
+{
+	const hrt_abstime now = hrt_absolute_time();
+
+	bool already_copied = false;
+	rtcm_data_s msg;
+
+	if (now > _last_rtcm_injection_time + 5_s) {
+		for (int instance = 0; instance < _rtcm_corrections_sub.size(); instance++) {
+			if (_rtcm_corrections_sub[instance].advertised() && _rtcm_corrections_sub[instance].copy(&msg)) {
+				if (now < msg.timestamp + 5_s) {
+					already_copied = true;
+					_selected_rtcm_instance = instance;
+					break;
+				}
+			}
+		}
+	}
+
+	bool have_msg = already_copied;
+	size_t num_injections = 0;
+
+	// Budget checked before reading, never after: a message taken off the queue
+	// and left behind is gone.
+	while (num_injections < rtcm_data_s::ORB_QUEUE_LENGTH) {
+		if (!have_msg) {
+			auto &sub = _rtcm_corrections_sub[_selected_rtcm_instance];
+			const unsigned last_generation = sub.get_last_generation();
+
+			if (!sub.update(&msg)) {
+				break;
+			}
+
+			if (sub.get_last_generation() != last_generation + 1) {
+				PX4_WARN("%s lost, generation %u -> %u", sub.get_topic()->o_name,
+					 last_generation, sub.get_last_generation());
+			}
+		}
+
+		have_msg = false;
+		num_injections++;
+		PublishRTCMStream(msg.data, msg.len);
+		_rtcm_injection_rate_message_count++;
+		_last_rtcm_injection_time = hrt_absolute_time();
+	}
+}
+
+// Drains rtcm_moving_baseline (moving-base RTCM 4072 from a peer GPS) to
+// ardupilot::MovingBaselineData. Single publisher (instance 0), so no stale-link selection.
+void UavcanGnssBridge::drainMovingBaseline()
+{
+	rtcm_data_s msg;
+	size_t num_injections = 0;
+
+	while (num_injections < rtcm_data_s::ORB_QUEUE_LENGTH) {
+		const unsigned last_generation = _rtcm_moving_baseline_sub.get_last_generation();
+
+		if (!_rtcm_moving_baseline_sub.update(&msg)) {
+			break;
+		}
+
+		num_injections++;
+
+		if (_rtcm_moving_baseline_sub.get_last_generation() != last_generation + 1) {
+			PX4_WARN("%s lost, generation %u -> %u", _rtcm_moving_baseline_sub.get_topic()->o_name,
+				 last_generation, _rtcm_moving_baseline_sub.get_last_generation());
+		}
+
+		PublishMovingBaselineData(msg.data, msg.len);
+	}
+}
+
+// The two RTCM streams use separate CAN publishers: fixed-base corrections go to
+// uavcan::RTCMStream and moving-baseline RTCM to ardupilot::MovingBaselineData, so corrections
+// are never mirrored onto the moving-baseline message.
+void UavcanGnssBridge::handleInjectDataTopic()
+{
+	const hrt_abstime now = hrt_absolute_time();
+
+	// Measure the fixed-base corrections injection rate every 5 seconds (moving-baseline forwarding
+	// is tracked separately via _moving_baseline_data_pub_perf, so it is excluded here).
+	if (now > _last_rate_measurement + 5_s) {
+		float dt = (now - _last_rate_measurement) / 1e6f;
+		_rtcm_injection_rate = _rtcm_injection_rate_message_count / dt;
+		_last_rate_measurement = now;
+		_rtcm_injection_rate_message_count = 0;
+	}
+
+	if (_publish_rtcm_stream) {
+		drainRtcmCorrections();
+	}
+
+	if (_publish_moving_baseline_data) {
+		drainMovingBaseline();
+	}
+}
+
+bool UavcanGnssBridge::PublishRTCMStream(const uint8_t *const data, const size_t data_len)
+{
+	uavcan::equipment::gnss::RTCMStream msg;
+
+	msg.protocol_id = uavcan::equipment::gnss::RTCMStream::PROTOCOL_ID_RTCM3;
+
+	const size_t capacity = msg.data.capacity();
+	size_t written = 0;
+	bool result = true;
+
+	while (result && written < data_len) {
+		size_t chunk_size = data_len - written;
+
+		if (chunk_size > capacity) {
+			chunk_size = capacity;
+		}
+
+		for (size_t i = 0; i < chunk_size; ++i) {
+			msg.data.push_back(data[written]);
+			written += 1;
+		}
+
+		result = _pub_rtcm_stream.broadcast(msg) >= 0;
+		perf_count(_rtcm_stream_pub_perf);
+
+		if (!result) {
+			// TX queue / pool exhaustion drops the rest of this message silently -
+			// the receiver-side framer sees a partial frame and fails its CRC.
+			perf_count(_rtcm_stream_pub_failed_perf);
+		}
+
+		msg.data.clear();
+	}
+
+	return result;
+}
+
+bool UavcanGnssBridge::PublishMovingBaselineData(const uint8_t *data, size_t data_len)
+{
+	ardupilot::gnss::MovingBaselineData msg;
+
+	const size_t capacity = msg.data.capacity();
+	size_t written = 0;
+	bool result = true;
+
+	while (result && written < data_len) {
+		size_t chunk_size = data_len - written;
+
+		if (chunk_size > capacity) {
+			chunk_size = capacity;
+		}
+
+		for (size_t i = 0; i < chunk_size; ++i) {
+			msg.data.push_back(data[written]);
+			written += 1;
+		}
+
+		result = _pub_moving_baseline_data.broadcast(msg) >= 0;
+		perf_count(_moving_baseline_data_pub_perf);
+
+		if (!result) {
+			perf_count(_moving_baseline_data_pub_failed_perf);
+		}
+
+		msg.data.clear();
+	}
+
+	return result;
+}
+
+void UavcanGnssBridge::print_status() const
+{
+	UavcanSensorBridgeBase::print_status();
+	perf_print_counter(_rtcm_stream_pub_perf);
+	perf_print_counter(_rtcm_stream_pub_failed_perf);
+	perf_print_counter(_moving_baseline_data_pub_perf);
+	perf_print_counter(_moving_baseline_data_pub_failed_perf);
+	perf_print_counter(_moving_baseline_data_sub_perf);
+}

@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "px4_msgs__py",
+		"source" : "/home/jarvis/Week1/px4_ros2_ws/build/px4_msgs/px4_msgs__py"
+	}
+}

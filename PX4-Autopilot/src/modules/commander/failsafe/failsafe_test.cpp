@@ -1,0 +1,797 @@
+/****************************************************************************
+ *
+ *   Copyright (c) 2022 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
+
+#include <gtest/gtest.h>
+
+#include "failsafe.h"
+#include "failsafe_action_modes.h"
+#include <uORB/topics/vehicle_status.h>
+#include "../ModeUtil/mode_requirements.hpp"
+
+// to run: make tests TESTFILTER=failsafe_test
+
+using namespace time_literals;
+
+class FailsafeTester : public Failsafe
+{
+public:
+	FailsafeTester(ModuleParams *parent) : Failsafe(parent) {}
+
+protected:
+
+	void checkStateAndMode(const hrt_abstime &time_us, const State &state,
+			       const failsafe_flags_s &status_flags) override
+	{
+		CHECK_FAILSAFE(status_flags, manual_control_signal_lost, ActionOptions(Action::RTL).clearOn(ClearCondition::OnModeChangeOrDisarm));
+		CHECK_FAILSAFE(status_flags, gcs_connection_lost, Action::Descend);
+
+		if (state.user_intended_mode == vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION) {
+			CHECK_FAILSAFE(status_flags, mission_failure, Action::Descend);
+		}
+
+		CHECK_FAILSAFE(status_flags, wind_limit_exceeded, ActionOptions(Action::RTL).allowUserTakeover(UserTakeoverAllowed::Never));
+		CHECK_FAILSAFE(status_flags, battery_low_remaining_time, ActionOptions(Action::RTL).causedBy(Cause::RemainingFlightTimeLow));
+		CHECK_FAILSAFE(status_flags, offboard_control_signal_lost, ActionOptions(Action::Hold));
+
+		CHECK_FAILSAFE(status_flags, navigator_failure, ActionOptions(Action::Warn));
+		CHECK_FAILSAFE(status_flags, fd_imbalanced_prop,
+			       ActionOptions(Action::None).allowUserTakeover(UserTakeoverAllowed::AlwaysModeSwitchOnly));
+
+		_last_state_test = checkFailsafe(_caller_id_test, _last_state_test, status_flags.fd_motor_failure
+						 && status_flags.fd_critical_failure, ActionOptions(Action::Terminate).cannotBeDeferred());
+	}
+
+	Action checkModeFallback(const failsafe_flags_s &status_flags, uint8_t user_intended_mode) const override
+	{
+		return Action::None;
+	}
+
+private:
+	const int _caller_id_test{genCallerId()};
+	bool _last_state_test{false};
+};
+
+class FailsafeTest : public ::testing::Test
+
+{
+public:
+
+	void SetUp() override
+	{
+		param_control_autosave(false);
+		param_t param = param_handle(px4::params::COM_FAIL_ACT_T);
+
+		float hold_delay = 5.f;
+		param_set(param, &hold_delay);
+	}
+
+};
+
+
+TEST_F(FailsafeTest, General)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 5_s;
+	bool stick_override_request = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// manual control lost -> Hold, then RTL
+	time += 10_ms;
+	failsafe_flags.manual_control_signal_lost = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+	time += 6_s;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// DL link lost -> Descend
+	time += 10_ms;
+	failsafe_flags.gcs_connection_lost = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Descend);
+
+	// DL link regained -> RTL (manual control still lost)
+	time += 10_ms;
+	failsafe_flags.gcs_connection_lost = false;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// Manual control lost cleared -> keep RTL
+	time += 10_ms;
+	failsafe_flags.manual_control_signal_lost = false;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// Mode change -> clear failsafe
+	time += 10_ms;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_ALTCTL;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+}
+
+TEST_F(FailsafeTest, Takeover)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	bool stick_override_request = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+
+	// Mission failure -> no failsafe
+	time += 10_ms;
+	failsafe_flags.mission_failure = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Change to mission -> Hold, then Descend
+	time += 10_ms;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+	// Try stick movement during hold -> must be denied
+	time += 3_s;
+	stick_override_request = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	stick_override_request = false;
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+	// Now Descend
+	time += 3_s;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Descend);
+
+	// Move sticks -> user takeover active
+	time += 10_ms;
+	stick_override_request = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Warn);
+	ASSERT_TRUE(failsafe.userTakeoverActive());
+	stick_override_request = false;
+
+	// Now the failsafe must clear as we switched mode
+	time += 10_ms;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_FALSE(failsafe.userTakeoverActive());
+}
+
+TEST_F(FailsafeTest, TakeoverDenied)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	bool stick_override_request = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+
+	// Wind limit exceeded -> RTL w/o delay and denying takeover
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+	// Try takeover (mode switch + stick movements)
+	time += 10_ms;
+	stick_override_request = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_STAB;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	stick_override_request = false;
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// Test termination
+	failsafe_flags.fd_motor_failure = true;
+	failsafe_flags.fd_critical_failure = true;
+	time += 10_ms;
+	stick_override_request = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	stick_override_request = false;
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Terminate);
+
+	// Termination is final
+	failsafe_flags.wind_limit_exceeded = false;
+	failsafe_flags.fd_motor_failure = false;
+	failsafe_flags.fd_critical_failure = false;
+	state.armed = false;
+	time += 10_ms;
+	stick_override_request = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, stick_override_request, failsafe_flags);
+	stick_override_request = false;
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Terminate);
+}
+
+TEST_F(FailsafeTest, CanTakeoverDegradedFailsafe)
+{
+	FailsafeTester failsafe(nullptr);
+
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_MANUAL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	failsafe_flags_s failsafe_flags{};
+	mode_util::getModeRequirements(state.vehicle_type, failsafe_flags); // Load mode requirements to degrade without valid position estimate
+	bool user_intended_mode_updated = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+
+	// Battery time low -> Hold for the delay
+	time += 10_ms;
+	failsafe_flags.battery_low_remaining_time = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+
+	// Delay over -> RTL
+	time += 5_s;
+	failsafe_flags.battery_low_remaining_time = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// Global position gets invalid -> Land
+	time += 10_ms;
+	failsafe_flags.global_position_invalid = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Land);
+
+	// User wants takeover -> Altitude mode + Warning
+	time += 10_ms;
+	user_intended_mode_updated = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_ALTCTL;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Warn);
+	ASSERT_TRUE(failsafe.userTakeoverActive());
+}
+
+TEST_F(FailsafeTest, NoDelayForWarn)
+{
+	// Ensure there is no Hold/delay when the current action is Warn
+	FailsafeTester failsafe(nullptr);
+
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_MANUAL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	failsafe_flags_s failsafe_flags{};
+	bool user_intended_mode_updated = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+
+	// Navigator failure -> Warn
+	time += 10_ms;
+	failsafe_flags.navigator_failure = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Warn);
+
+	// Imbalanced props -> Warn (no delay)
+	time += 5_s;
+	failsafe_flags.fd_imbalanced_prop = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Warn);
+}
+
+TEST_F(FailsafeTest, NoneActionDoesNotRestrictUserTakeover)
+{
+	FailsafeTester failsafe(nullptr);
+
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_MANUAL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	failsafe_flags_s failsafe_flags{};
+	bool user_intended_mode_updated = false;
+
+	// Add an active Action::None entry with a restrictive takeover setting.
+	failsafe_flags.fd_imbalanced_prop = true;
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Battery time low -> Hold for the delay
+	time += 10_ms;
+	failsafe_flags.battery_low_remaining_time = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+
+	// Delay over -> RTL
+	time += 5_s;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// User wants takeover via sticks. The active Action::None must not downgrade this to mode-switch-only.
+	time += 10_ms;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, true, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, vehicle_status_s::NAVIGATION_STATE_POSCTL);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Warn);
+	ASSERT_TRUE(failsafe.userTakeoverActive());
+}
+
+TEST_F(FailsafeTest, NoImmediateTakeoverWhenFailsafeOnModeSwitch)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	bool user_intended_mode_updated = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+
+	// Switch to offboard but no offboard signal -> No immediate user takeover flagged but rather Hold
+	time += 10_ms;
+	user_intended_mode_updated = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_OFFBOARD;
+	failsafe_flags.offboard_control_signal_lost = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+	ASSERT_FALSE(failsafe.userTakeoverActive());
+}
+
+TEST_F(FailsafeTest, OrbitAfterFailsafeExplicitCommandAllowed)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+	bool user_intended_mode_updated = false;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+
+	// Wind limit exceeded -> RTL
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = true;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	time += 5_s;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+
+	// Failsafe resolved AND operator commands Orbit -> enter Orbit (not Loiter)
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = false;
+	user_intended_mode_updated = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_ORBIT;
+	updated_user_intented_mode = failsafe.update(time, state, user_intended_mode_updated, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_EQ(updated_user_intented_mode, vehicle_status_s::NAVIGATION_STATE_ORBIT);
+}
+
+TEST_F(FailsafeTest, OrbitAutoresumeAfterFailsafeDowngradedToLoiter)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_ORBIT;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+
+	failsafe.update(time, state, false, false, failsafe_flags);
+
+	// Wind limit exceeded -> eventually RTL; Orbit is downgraded to Loiter at failsafe entry.
+	// Simulate Commander feeding the returned mode back as user_intended_mode each cycle.
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = true;
+	state.user_intended_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	time += 5_s;
+	state.user_intended_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+	ASSERT_EQ(state.user_intended_mode, vehicle_status_s::NAVIGATION_STATE_AUTO_LOITER);
+
+	// Failsafe resolved, no new mode commanded -> stays Loiter
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = false;
+	uint8_t updated_user_intended_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_EQ(updated_user_intended_mode, vehicle_status_s::NAVIGATION_STATE_AUTO_LOITER);
+}
+
+TEST_F(FailsafeTest, Defer)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+
+	const int defer_timeout_s = 10;
+	failsafe.deferFailsafes(true, defer_timeout_s);
+	ASSERT_TRUE(failsafe.getDeferFailsafes());
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+	// GCS connection lost -> deferred
+	time += 10_ms;
+	failsafe_flags.gcs_connection_lost = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_TRUE(failsafe.getDeferFailsafes());
+	ASSERT_TRUE(failsafe.failsafeDeferred());
+
+	// Wait a bit, still deferred
+	time += 5_s;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_STAB;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_TRUE(failsafe.getDeferFailsafes());
+	ASSERT_TRUE(failsafe.failsafeDeferred());
+
+	// Wait a bit, don't defer anymore -> failsafe triggered (hold)
+	time += 1_s;
+	failsafe.deferFailsafes(false, 0);
+	ASSERT_FALSE(failsafe.getDeferFailsafes());
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+	ASSERT_FALSE(failsafe.getDeferFailsafes());
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+
+	// Cannot enable while in failsafe
+	ASSERT_FALSE(failsafe.deferFailsafes(true, 0));
+
+	// Still in hold
+	time += 4_s;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Hold);
+
+	// Now changed to descend
+	time += 4_s;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Descend);
+
+	// Clear failsafe
+	failsafe_flags.gcs_connection_lost = false;
+	time += 10_ms;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+
+	// Defer and trigger timeout
+	failsafe.deferFailsafes(true, defer_timeout_s);
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_TRUE(failsafe.failsafeDeferred());
+	time += 1_s * defer_timeout_s + 10_ms;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = false;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Defer and clear failsafe -> no action
+	failsafe.deferFailsafes(true, defer_timeout_s);
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_TRUE(failsafe.failsafeDeferred());
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = false;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+	failsafe.deferFailsafes(false, defer_timeout_s);
+	time += 10_ms;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Defer and trigger non-deferrable failsafe
+	failsafe.deferFailsafes(true, defer_timeout_s);
+	time += 10_ms;
+	failsafe_flags.wind_limit_exceeded = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_TRUE(failsafe.failsafeDeferred());
+	time += 10_ms;
+	failsafe_flags.fd_motor_failure = true;
+	failsafe_flags.fd_critical_failure = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Terminate);
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+}
+
+TEST_F(FailsafeTest, DeferAndClear)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 3847124342;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+
+	failsafe.deferFailsafes(true, -1);
+	ASSERT_TRUE(failsafe.getDeferFailsafes());
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+	// Manual control lost -> deferred
+	time += 10_ms;
+	failsafe_flags.manual_control_signal_lost = true;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_TRUE(failsafe.failsafeDeferred());
+
+	// Clear flag (the failsafe action only clears on mode switch, but we still expect it to clear as it's being deferred)
+	failsafe_flags.manual_control_signal_lost = false;
+	time += 5_s;
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+
+	// Wait a bit, don't defer anymore -> no failsafe triggered
+	time += 1_s;
+	failsafe.deferFailsafes(false, 0);
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+	ASSERT_FALSE(failsafe.getDeferFailsafes());
+	ASSERT_FALSE(failsafe.failsafeDeferred());
+}
+
+TEST_F(FailsafeTest, SkipFailsafe)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_AUTO_RTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 5_s;
+
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Manual control lost while in RTL -> stay in RTL and only warn
+	failsafe_flags.manual_control_signal_lost = true;
+
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Warn);
+}
+
+TEST_F(FailsafeTest, UserTermination)
+{
+	FailsafeTester failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	FailsafeBase::State state{};
+	state.armed = true;
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_TERMINATION;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 5_s;
+
+	// User intended termination -> failsafe termination
+	uint8_t updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	EXPECT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	EXPECT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Terminate);
+
+	// Links lost during termination -> stay in termination
+	failsafe_flags.gcs_connection_lost = true;
+	failsafe_flags.manual_control_signal_lost = true;
+
+	updated_user_intented_mode = failsafe.update(time, state, false, false, failsafe_flags);
+	EXPECT_EQ(updated_user_intented_mode, state.user_intended_mode);
+	EXPECT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Terminate);
+}
+
+TEST_F(FailsafeTest, FallbackAltitudeRequiresManualControl)
+{
+	int nav_rcl_act = 2;
+	param_set(param_handle(px4::params::NAV_RCL_ACT), &nav_rcl_act);
+
+	Failsafe failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	mode_util::getModeRequirements(vehicle_status_s::VEHICLE_TYPE_ROTARY_WING, failsafe_flags);
+	failsafe_flags.manual_control_signal_lost = true;
+
+	FailsafeBase::State state{};
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 5_s;
+
+	// If arming was allowed without manual control, RC loss is ignored until manual control returns.
+	failsafe.update(time, state, false, false, failsafe_flags);
+
+	state.armed = true;
+	time += 10_ms;
+	failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Losing position in PosCtl would normally fall back to AltCtl, but AltCtl needs manual control.
+	failsafe_flags.local_position_invalid_relaxed = true;
+	time += 10_ms;
+	failsafe.update(time, state, false, false, failsafe_flags);
+	EXPECT_EQ(failsafe.selectedAction(), FailsafeBase::Action::RTL);
+}
+
+TEST_F(FailsafeTest, FallbackAltitudeUsesNavRclActParam)
+{
+	int nav_rcl_act = 5;
+	param_set(param_handle(px4::params::NAV_RCL_ACT), &nav_rcl_act);
+
+	Failsafe failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	mode_util::getModeRequirements(vehicle_status_s::VEHICLE_TYPE_ROTARY_WING, failsafe_flags);
+	failsafe_flags.manual_control_signal_lost = true;
+
+	FailsafeBase::State state{};
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_POSCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 5_s;
+
+	// If arming was allowed without manual control, RC loss is ignored until manual control returns.
+	failsafe.update(time, state, false, false, failsafe_flags);
+
+	state.armed = true;
+	time += 10_ms;
+	failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Losing position in PosCtl triggers the manual-control fallback, which should use NAV_RCL_ACT.
+	failsafe_flags.local_position_invalid_relaxed = true;
+	time += 10_ms;
+	failsafe.update(time, state, false, false, failsafe_flags);
+	EXPECT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Terminate);
+}
+
+TEST_F(FailsafeTest, TrafficAvoidanceUnhealthyUsesTrafficAvoidActParam)
+{
+	// Each param value is exercised on its own fresh Failsafe instance, to avoid
+	// action hysteresis/clear-conditions from one value leaking into the next.
+	auto selectedActionFor = [](traffic_avoidance::FailsafeMode mode) {
+		int32_t com_traff_avoid = static_cast<int32_t>(mode);
+		param_set(param_handle(px4::params::COM_TRAFF_AVOID), &com_traff_avoid);
+
+		// Disable the generic user-takeover hold delay (set to 5s in SetUp()) so a newly
+		// triggered RTL/Land is selected immediately instead of Hold-then-RTL/Land.
+		float com_fail_act_t = 0.f;
+		param_set(param_handle(px4::params::COM_FAIL_ACT_T), &com_fail_act_t);
+
+		Failsafe failsafe(nullptr);
+
+		failsafe_flags_s failsafe_flags{};
+		mode_util::getModeRequirements(vehicle_status_s::VEHICLE_TYPE_ROTARY_WING, failsafe_flags);
+		failsafe_flags.traffic_avoidance_unhealthy = true;
+
+		FailsafeBase::State state{};
+		state.armed = true;
+		state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+
+		failsafe.update(5_s, state, false, false, failsafe_flags);
+		return failsafe.selectedAction();
+	};
+
+	EXPECT_EQ(selectedActionFor(traffic_avoidance::FailsafeMode::Disabled), FailsafeBase::Action::None);
+	EXPECT_EQ(selectedActionFor(traffic_avoidance::FailsafeMode::Warning), FailsafeBase::Action::Warn);
+	EXPECT_EQ(selectedActionFor(traffic_avoidance::FailsafeMode::Error), FailsafeBase::Action::Warn); // same as Warning in-flight
+	EXPECT_EQ(selectedActionFor(traffic_avoidance::FailsafeMode::Return), FailsafeBase::Action::RTL);
+	EXPECT_EQ(selectedActionFor(traffic_avoidance::FailsafeMode::Land), FailsafeBase::Action::Land);
+}
+
+TEST_F(FailsafeTest, FallbackStabilizedRequiresManualControl)
+{
+	int nav_rcl_act = 2;
+	param_set(param_handle(px4::params::NAV_RCL_ACT), &nav_rcl_act);
+
+	Failsafe failsafe(nullptr);
+
+	failsafe_flags_s failsafe_flags{};
+	mode_util::getModeRequirements(vehicle_status_s::VEHICLE_TYPE_ROTARY_WING, failsafe_flags);
+	failsafe_flags.manual_control_signal_lost = true;
+
+	FailsafeBase::State state{};
+	state.user_intended_mode = vehicle_status_s::NAVIGATION_STATE_ALTCTL;
+	state.vehicle_type = vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+	hrt_abstime time = 5_s;
+
+	// If arming was allowed without manual control, RC loss is ignored until manual control returns.
+	failsafe.update(time, state, false, false, failsafe_flags);
+
+	state.armed = true;
+	time += 10_ms;
+	failsafe.update(time, state, false, false, failsafe_flags);
+	ASSERT_EQ(failsafe.selectedAction(), FailsafeBase::Action::None);
+
+	// Losing altitude in AltCtl would normally fall back to Stabilized, but Stabilized needs manual control.
+	failsafe_flags.local_altitude_invalid = true;
+	time += 10_ms;
+	failsafe.update(time, state, false, false, failsafe_flags);
+	// checkModeFallback returns RTL from NAV_RCL_ACT. The framework then cascades RTL -> Land -> Descend
+	// because local altitude loss blocks both AUTO_RTL and AUTO_LAND.
+	EXPECT_EQ(failsafe.selectedAction(), FailsafeBase::Action::Descend);
+}

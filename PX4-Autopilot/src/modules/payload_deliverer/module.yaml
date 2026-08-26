@@ -1,0 +1,32 @@
+module_name: payload_deliverer
+
+parameters:
+    - group: Payload Deliverer
+      definitions:
+
+        # Gripper configuration
+        PD_GRIPPER_TYPE:
+            description:
+                short: Gripper control type
+                long: |
+                  Selects the types of control actions the gripper accepts.
+            type: enum
+            values:
+                -1: Undefined
+                0: Binary Grab/Release
+            min: -1
+            max: 0
+            default: 0
+
+        PD_GRIPPER_TO:
+            description:
+                short: Timeout for successful gripper actuation acknowledgement
+                long: |
+                  Maximum time Gripper will wait while the successful griper actuation isn't recognised.
+                  If the gripper has no feedback sensor, it will simply wait for
+                  this time before considering gripper actuation successful and publish a
+                  'VehicleCommandAck' signaling successful gripper action
+            type: float
+            unit: s
+            min: 0
+            default: 1

@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# board sensors init
+#------------------------------------------------------------------------------
+gps start -d /dev/ttyS0 -p ubx
+pps_capture start
+
+icm42688p -R 0 -s start
+
+if ! bmp388 -I -b 2 start
+then
+	bmp388 -I -b 1 start
+fi
+
+bmm150 -I -b 1 start
