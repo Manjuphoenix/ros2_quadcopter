@@ -54,9 +54,10 @@ def build_occupancy_grid():
     #grid.add_rect_obstacle(-2, -2, 2, 2, inflate_m=0.6)
     #grid.add_circle_obstacle(5, -5, 2.0, inflate_m=0.6)
     #grid.add_rect_obstacle(-8, 3, -4, 8, inflate_m=0.6)
-    #grid.add_rect_obstacle(2, -3, 4, -1, inflate_m=0.6)
+    
+    
+    grid.add_rect_obstacle(2, -3, 4, -1, inflate_m=0.6)
     grid.add_rect_obstacle(3, 3, 7, 7, inflate_m=0.6)
-    grid.add_circle_obstacle(5, -5, 2.0, inflate_m=0.6)
     grid.add_rect_obstacle(-8, 3, -4, 8, inflate_m=0.6)
     return grid
 
@@ -112,7 +113,8 @@ class AstarOffboardNavigator(Node):
         start_x, start_y, _ = self.current_pos
         start = (start_x, start_y)
 
-        goal = random_free_point(self.grid, margin_m=1.0)
+        # goal = random_free_point(self.grid, margin_m=1.0)
+        goal = (5.0, 8.0)
         self.get_logger().info(f'Planning path: start={start}, goal={goal}')
 
         try:
