@@ -1,0 +1,220 @@
+[0.000000] (-) TimerEvent: {}
+[0.001508] (-) JobUnselected: {'identifier': 'drone_rrt_planner'}
+[0.001555] (-) JobUnselected: {'identifier': 'px4_msgs'}
+[0.001578] (drone_rrt_cpp) JobQueued: {'identifier': 'drone_rrt_cpp', 'dependencies': OrderedDict()}
+[0.001726] (drone_rrt_cpp) JobStarted: {'identifier': 'drone_rrt_cpp'}
+[0.013346] (drone_rrt_cpp) JobProgress: {'identifier': 'drone_rrt_cpp', 'progress': 'cmake'}
+[0.013403] (drone_rrt_cpp) Command: {'cmd': ['/usr/local/bin/cmake', '/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp', '-DCMAKE_INSTALL_PREFIX=/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp'], 'cwd': '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('CONDA_PROMPT_MODIFIER', '(base)'), ('__EGL_VENDOR_LIBRARY_DIRS', '/home/jarvis/anaconda3/share/glvnd/egl_vendor.d'), ('USER', 'jarvis'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/jarvis'), ('CONDA_SHLVL', '1'), ('OLDPWD', '/home/jarvis/Week1/px4_ros2_ws/install'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1501'), ('SYSTEMD_EXEC_PID', '1614'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('_CE_M', ''), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator25ef4b219e3b005583550f2b0f9f990c3'), ('_CONDA_ROOT', '/home/jarvis/anaconda3'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '2064'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'jarvis'), ('JOURNAL_STREAM', '8:11170'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'jarvis'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('_CE_CONDA', ''), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/jarvis/anaconda3/bin:/home/jarvis/anaconda3/condabin:/home/jarvis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/Ros-humble:@/tmp/.ICE-unix/1582,unix/Ros-humble:/tmp/.ICE-unix/1582'), ('INVOCATION_ID', 'cd24c5991c9f4526a9ada8eccbdd6168'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.XZ1TV3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/jarvis/anaconda3/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble'), ('CONDA_PYTHON_EXE', '/home/jarvis/anaconda3/bin/python'), ('SHELL', '/bin/bash'), ('TERMINATOR_UUID', 'urn:uuid:8c303baa-37b9-4e9d-80ef-d5443b22dfed'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('CONDA_DEFAULT_ENV', 'base'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('_CONDA_EXE', '/home/jarvis/anaconda3/bin/conda'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('CONDA_EXE', '/home/jarvis/anaconda3/bin/conda'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('CONDA_PREFIX', '/home/jarvis/anaconda3'), ('GSETTINGS_SCHEMA_DIR_CONDA_BACKUP', ''), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble')]), 'shell': False}
+[0.020182] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.020268] (drone_rrt_cpp) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.020298] (drone_rrt_cpp) StderrLine: {'line': b'  CMake.\n'}
+[0.020323] (drone_rrt_cpp) StderrLine: {'line': b'\n'}
+[0.020348] (drone_rrt_cpp) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.020372] (drone_rrt_cpp) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.020396] (drone_rrt_cpp) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.020419] (drone_rrt_cpp) StderrLine: {'line': b'\n'}
+[0.020442] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[0m\n'}
+[0.063993] (drone_rrt_cpp) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.100349] (-) TimerEvent: {}
+[0.126342] (drone_rrt_cpp) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.138377] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.198291] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.200822] (-) TimerEvent: {}
+[0.217757] (drone_rrt_cpp) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.218030] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.218065] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.229152] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.301127] (-) TimerEvent: {}
+[0.302111] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.317968] (drone_rrt_cpp) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.318894] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.319044] (drone_rrt_cpp) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.327083] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.401458] (-) TimerEvent: {}
+[0.449703] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found Python3: /home/jarvis/anaconda3/bin/python3 (found version "3.14.6") found components: Interpreter\n'}
+[0.502215] (-) TimerEvent: {}
+[0.547555] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.595129] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.599456] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.603021] (-) TimerEvent: {}
+[0.608465] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.622150] (drone_rrt_cpp) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.644451] (drone_rrt_cpp) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.691542] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.3 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.694399] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.703222] (-) TimerEvent: {}
+[0.791500] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/aarch64-linux-gnu/libcrypto.so (found version "3.0.2")\n'}
+[0.803961] (-) TimerEvent: {}
+[0.821405] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include\n'}
+[0.874245] (drone_rrt_cpp) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[0.884863] (drone_rrt_cpp) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.904265] (-) TimerEvent: {}
+[0.943168] (drone_rrt_cpp) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[0.945085] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found Threads: TRUE\n'}
+[1.004481] (-) TimerEvent: {}
+[1.011097] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found octomap_msgs: 2.0.1 (/opt/ros/humble/share/octomap_msgs/cmake)\n'}
+[1.059465] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2")\n'}
+[1.060985] (drone_rrt_cpp) StdoutLine: {'line': b"-- Checking for module 'ompl'\n"}
+[1.072043] (drone_rrt_cpp) StdoutLine: {'line': b'--   Found ompl, version 1.5.2\n'}
+[1.104709] (-) TimerEvent: {}
+[1.108521] (drone_rrt_cpp) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[1.205259] (-) TimerEvent: {}
+[1.208801] (drone_rrt_cpp) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[1.208917] (drone_rrt_cpp) StdoutLine: {'line': b'-- Configured cppcheck include dirs: \n'}
+[1.208949] (drone_rrt_cpp) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[1.208978] (drone_rrt_cpp) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[1.209415] (drone_rrt_cpp) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[1.209495] (drone_rrt_cpp) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[1.210946] (drone_rrt_cpp) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[1.211023] (drone_rrt_cpp) StdoutLine: {'line': b'-- Configuring done (1.2s)\n'}
+[1.222778] (drone_rrt_cpp) StdoutLine: {'line': b'-- Generating done (0.0s)\n'}
+[1.225572] (drone_rrt_cpp) StdoutLine: {'line': b'-- Build files have been written to: /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp\n'}
+[1.236205] (drone_rrt_cpp) CommandEnded: {'returncode': 0}
+[1.236755] (drone_rrt_cpp) JobProgress: {'identifier': 'drone_rrt_cpp', 'progress': 'build'}
+[1.236778] (drone_rrt_cpp) Command: {'cmd': ['/usr/local/bin/cmake', '--build', '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp', '--', '-j10', '-l10'], 'cwd': '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('CONDA_PROMPT_MODIFIER', '(base)'), ('__EGL_VENDOR_LIBRARY_DIRS', '/home/jarvis/anaconda3/share/glvnd/egl_vendor.d'), ('USER', 'jarvis'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/jarvis'), ('CONDA_SHLVL', '1'), ('OLDPWD', '/home/jarvis/Week1/px4_ros2_ws/install'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1501'), ('SYSTEMD_EXEC_PID', '1614'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('_CE_M', ''), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator25ef4b219e3b005583550f2b0f9f990c3'), ('_CONDA_ROOT', '/home/jarvis/anaconda3'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '2064'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'jarvis'), ('JOURNAL_STREAM', '8:11170'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'jarvis'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('_CE_CONDA', ''), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/jarvis/anaconda3/bin:/home/jarvis/anaconda3/condabin:/home/jarvis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/Ros-humble:@/tmp/.ICE-unix/1582,unix/Ros-humble:/tmp/.ICE-unix/1582'), ('INVOCATION_ID', 'cd24c5991c9f4526a9ada8eccbdd6168'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.XZ1TV3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/jarvis/anaconda3/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble'), ('CONDA_PYTHON_EXE', '/home/jarvis/anaconda3/bin/python'), ('SHELL', '/bin/bash'), ('TERMINATOR_UUID', 'urn:uuid:8c303baa-37b9-4e9d-80ef-d5443b22dfed'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('CONDA_DEFAULT_ENV', 'base'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('_CONDA_EXE', '/home/jarvis/anaconda3/bin/conda'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('CONDA_EXE', '/home/jarvis/anaconda3/bin/conda'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('CONDA_PREFIX', '/home/jarvis/anaconda3'), ('GSETTINGS_SCHEMA_DIR_CONDA_BACKUP', ''), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble')]), 'shell': False}
+[1.259035] (drone_rrt_cpp) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/rrt_planner_node.dir/src/rrt_planner_node.cpp.o\x1b[0m\n'}
+[1.305684] (-) TimerEvent: {}
+[1.406016] (-) TimerEvent: {}
+[1.506411] (-) TimerEvent: {}
+[1.607122] (-) TimerEvent: {}
+[1.707967] (-) TimerEvent: {}
+[1.808548] (-) TimerEvent: {}
+[1.909241] (-) TimerEvent: {}
+[2.010451] (-) TimerEvent: {}
+[2.112199] (-) TimerEvent: {}
+[2.212726] (-) TimerEvent: {}
+[2.223147] (drone_rrt_cpp) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/usr/include/eigen3/Eigen/Core:214\x1b[m\x1b[K,\n'}
+[2.224176] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49\x1b[m\x1b[K,\n'}
+[2.224220] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43\x1b[m\x1b[K,\n'}
+[2.224249] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40\x1b[m\x1b[K,\n'}
+[2.224274] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2\x1b[m\x1b[K:\n'}
+[2.224300] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[KPacket Eigen::internal::pload(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char]\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[2.224371] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1671:9:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kvoid* memcpy(void*, const void*, size_t)\x1b[m\x1b[K\xe2\x80\x99 copying an object of non-trivial type \xe2\x80\x98\x1b[01m\x1b[KEigen::internal::Packet4c\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>\x1b[m\x1b[K\xe2\x80\x99} from an array of \xe2\x80\x98\x1b[01m\x1b[Kconst int8_t\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst signed char\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wclass-memaccess\x07-Wclass-memaccess\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[2.224425] (drone_rrt_cpp) StderrLine: {'line': b' 1671 |   \x1b[01;35m\x1b[Kmemcpy(&res, from, sizeof(Packet4c))\x1b[m\x1b[K;\n'}
+[2.224450] (drone_rrt_cpp) StderrLine: {'line': b'      |   \x1b[01;35m\x1b[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[2.224474] (drone_rrt_cpp) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/usr/include/eigen3/Eigen/Core:172\x1b[m\x1b[K,\n'}
+[2.224497] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49\x1b[m\x1b[K,\n'}
+[2.224521] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43\x1b[m\x1b[K,\n'}
+[2.225057] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40\x1b[m\x1b[K,\n'}
+[2.225154] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2\x1b[m\x1b[K:\n'}
+[2.225184] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KEigen::internal::Packet4c\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>\x1b[m\x1b[K\xe2\x80\x99} declared here\n'}
+[2.225213] (drone_rrt_cpp) StderrLine: {'line': b'  159 | struct \x1b[01;36m\x1b[Keigen_packet_wrapper\x1b[m\x1b[K\n'}
+[2.225238] (drone_rrt_cpp) StderrLine: {'line': b'      |        \x1b[01;36m\x1b[K^~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[2.225572] (drone_rrt_cpp) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/usr/include/eigen3/Eigen/Core:214\x1b[m\x1b[K,\n'}
+[2.225741] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49\x1b[m\x1b[K,\n'}
+[2.225769] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43\x1b[m\x1b[K,\n'}
+[2.225793] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40\x1b[m\x1b[K,\n'}
+[2.225818] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2\x1b[m\x1b[K:\n'}
+[2.225842] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[KPacket Eigen::internal::ploadu(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char]\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[2.225868] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1716:9:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kvoid* memcpy(void*, const void*, size_t)\x1b[m\x1b[K\xe2\x80\x99 copying an object of non-trivial type \xe2\x80\x98\x1b[01m\x1b[KEigen::internal::Packet4c\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>\x1b[m\x1b[K\xe2\x80\x99} from an array of \xe2\x80\x98\x1b[01m\x1b[Kconst int8_t\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst signed char\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wclass-memaccess\x07-Wclass-memaccess\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[2.225901] (drone_rrt_cpp) StderrLine: {'line': b' 1716 |   \x1b[01;35m\x1b[Kmemcpy(&res, from, sizeof(Packet4c))\x1b[m\x1b[K;\n'}
+[2.225925] (drone_rrt_cpp) StderrLine: {'line': b'      |   \x1b[01;35m\x1b[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[2.225952] (drone_rrt_cpp) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/usr/include/eigen3/Eigen/Core:172\x1b[m\x1b[K,\n'}
+[2.225978] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49\x1b[m\x1b[K,\n'}
+[2.226001] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43\x1b[m\x1b[K,\n'}
+[2.226024] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40\x1b[m\x1b[K,\n'}
+[2.226048] (drone_rrt_cpp) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2\x1b[m\x1b[K:\n'}
+[2.226071] (drone_rrt_cpp) StderrLine: {'line': b'\x1b[01m\x1b[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KEigen::internal::Packet4c\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>\x1b[m\x1b[K\xe2\x80\x99} declared here\n'}
+[2.226097] (drone_rrt_cpp) StderrLine: {'line': b'  159 | struct \x1b[01;36m\x1b[Keigen_packet_wrapper\x1b[m\x1b[K\n'}
+[2.226120] (drone_rrt_cpp) StderrLine: {'line': b'      |        \x1b[01;36m\x1b[K^~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[2.313065] (-) TimerEvent: {}
+[2.414018] (-) TimerEvent: {}
+[2.515254] (-) TimerEvent: {}
+[2.616150] (-) TimerEvent: {}
+[2.717143] (-) TimerEvent: {}
+[2.818189] (-) TimerEvent: {}
+[2.918990] (-) TimerEvent: {}
+[3.019921] (-) TimerEvent: {}
+[3.120463] (-) TimerEvent: {}
+[3.220998] (-) TimerEvent: {}
+[3.321419] (-) TimerEvent: {}
+[3.422880] (-) TimerEvent: {}
+[3.523161] (-) TimerEvent: {}
+[3.623488] (-) TimerEvent: {}
+[3.724293] (-) TimerEvent: {}
+[3.825107] (-) TimerEvent: {}
+[3.925531] (-) TimerEvent: {}
+[4.026274] (-) TimerEvent: {}
+[4.126568] (-) TimerEvent: {}
+[4.227520] (-) TimerEvent: {}
+[4.328137] (-) TimerEvent: {}
+[4.428552] (-) TimerEvent: {}
+[4.528965] (-) TimerEvent: {}
+[4.629243] (-) TimerEvent: {}
+[4.729896] (-) TimerEvent: {}
+[4.830371] (-) TimerEvent: {}
+[4.931492] (-) TimerEvent: {}
+[5.032338] (-) TimerEvent: {}
+[5.133077] (-) TimerEvent: {}
+[5.233766] (-) TimerEvent: {}
+[5.334492] (-) TimerEvent: {}
+[5.435130] (-) TimerEvent: {}
+[5.536174] (-) TimerEvent: {}
+[5.636539] (-) TimerEvent: {}
+[5.737512] (-) TimerEvent: {}
+[5.838188] (-) TimerEvent: {}
+[5.938995] (-) TimerEvent: {}
+[6.039432] (-) TimerEvent: {}
+[6.140172] (-) TimerEvent: {}
+[6.240736] (-) TimerEvent: {}
+[6.342131] (-) TimerEvent: {}
+[6.442959] (-) TimerEvent: {}
+[6.543362] (-) TimerEvent: {}
+[6.643939] (-) TimerEvent: {}
+[6.744889] (-) TimerEvent: {}
+[6.845427] (-) TimerEvent: {}
+[6.945977] (-) TimerEvent: {}
+[7.046318] (-) TimerEvent: {}
+[7.147177] (-) TimerEvent: {}
+[7.247919] (-) TimerEvent: {}
+[7.348279] (-) TimerEvent: {}
+[7.449040] (-) TimerEvent: {}
+[7.549521] (-) TimerEvent: {}
+[7.650219] (-) TimerEvent: {}
+[7.751912] (-) TimerEvent: {}
+[7.853083] (-) TimerEvent: {}
+[7.953770] (-) TimerEvent: {}
+[8.054091] (-) TimerEvent: {}
+[8.154797] (-) TimerEvent: {}
+[8.255476] (-) TimerEvent: {}
+[8.356358] (-) TimerEvent: {}
+[8.457022] (-) TimerEvent: {}
+[8.557440] (-) TimerEvent: {}
+[8.659169] (-) TimerEvent: {}
+[8.759515] (-) TimerEvent: {}
+[8.860349] (-) TimerEvent: {}
+[8.961445] (-) TimerEvent: {}
+[9.062407] (-) TimerEvent: {}
+[9.162907] (-) TimerEvent: {}
+[9.263438] (-) TimerEvent: {}
+[9.317145] (drone_rrt_cpp) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable rrt_planner_node\x1b[0m\n'}
+[9.363645] (-) TimerEvent: {}
+[9.464357] (-) TimerEvent: {}
+[9.565295] (-) TimerEvent: {}
+[9.666184] (-) TimerEvent: {}
+[9.767145] (-) TimerEvent: {}
+[9.772941] (drone_rrt_cpp) StdoutLine: {'line': b'[100%] Built target rrt_planner_node\n'}
+[9.780202] (drone_rrt_cpp) CommandEnded: {'returncode': 0}
+[9.782478] (drone_rrt_cpp) JobProgress: {'identifier': 'drone_rrt_cpp', 'progress': 'install'}
+[9.786237] (drone_rrt_cpp) Command: {'cmd': ['/usr/local/bin/cmake', '--install', '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp'], 'cwd': '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('CONDA_PROMPT_MODIFIER', '(base)'), ('__EGL_VENDOR_LIBRARY_DIRS', '/home/jarvis/anaconda3/share/glvnd/egl_vendor.d'), ('USER', 'jarvis'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/jarvis'), ('CONDA_SHLVL', '1'), ('OLDPWD', '/home/jarvis/Week1/px4_ros2_ws/install'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1501'), ('SYSTEMD_EXEC_PID', '1614'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('_CE_M', ''), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator25ef4b219e3b005583550f2b0f9f990c3'), ('_CONDA_ROOT', '/home/jarvis/anaconda3'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '2064'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'jarvis'), ('JOURNAL_STREAM', '8:11170'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'jarvis'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('_CE_CONDA', ''), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/jarvis/anaconda3/bin:/home/jarvis/anaconda3/condabin:/home/jarvis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/Ros-humble:@/tmp/.ICE-unix/1582,unix/Ros-humble:/tmp/.ICE-unix/1582'), ('INVOCATION_ID', 'cd24c5991c9f4526a9ada8eccbdd6168'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.XZ1TV3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/jarvis/anaconda3/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble'), ('CONDA_PYTHON_EXE', '/home/jarvis/anaconda3/bin/python'), ('SHELL', '/bin/bash'), ('TERMINATOR_UUID', 'urn:uuid:8c303baa-37b9-4e9d-80ef-d5443b22dfed'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('CONDA_DEFAULT_ENV', 'base'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('_CONDA_EXE', '/home/jarvis/anaconda3/bin/conda'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('CONDA_EXE', '/home/jarvis/anaconda3/bin/conda'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('CONDA_PREFIX', '/home/jarvis/anaconda3'), ('GSETTINGS_SCHEMA_DIR_CONDA_BACKUP', ''), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble')]), 'shell': False}
+[9.788142] (drone_rrt_cpp) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[9.788904] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/lib/drone_rrt_cpp/rrt_planner_node\n'}
+[9.791353] (drone_rrt_cpp) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/lib/drone_rrt_cpp/rrt_planner_node" to ""\n'}
+[9.791433] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/ament_index/resource_index/package_run_dependencies/drone_rrt_cpp\n'}
+[9.791465] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/ament_index/resource_index/parent_prefix_path/drone_rrt_cpp\n'}
+[9.792537] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/ament_prefix_path.sh\n'}
+[9.792719] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/ament_prefix_path.dsv\n'}
+[9.792753] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/path.sh\n'}
+[9.792781] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/path.dsv\n'}
+[9.793029] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.bash\n'}
+[9.793056] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.sh\n'}
+[9.793081] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.zsh\n'}
+[9.793876] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.dsv\n'}
+[9.794004] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/package.dsv\n'}
+[9.794033] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/ament_index/resource_index/packages/drone_rrt_cpp\n'}
+[9.794059] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/cmake/drone_rrt_cppConfig.cmake\n'}
+[9.794087] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/cmake/drone_rrt_cppConfig-version.cmake\n'}
+[9.794259] (drone_rrt_cpp) StdoutLine: {'line': b'-- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/package.xml\n'}
+[9.796068] (drone_rrt_cpp) CommandEnded: {'returncode': 0}
+[9.812209] (drone_rrt_cpp) JobEnded: {'identifier': 'drone_rrt_cpp', 'rc': 0}
+[9.812982] (-) EventReactorShutdown: {}

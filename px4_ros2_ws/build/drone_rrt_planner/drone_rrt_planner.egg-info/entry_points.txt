@@ -1,0 +1,3 @@
+[console_scripts]
+px4_waypoint_follower = drone_rrt_planner.px4_waypoint_follower:main
+

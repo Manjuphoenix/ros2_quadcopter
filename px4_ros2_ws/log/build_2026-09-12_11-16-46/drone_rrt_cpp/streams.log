@@ -1,0 +1,41 @@
+[0.015s] Invoking command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble CONDA_PROMPT_MODIFIER=(drones) /usr/local/bin/cmake --build /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp -- -j10 -l10
+[0.111s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.111s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.111s]   CMake.
+[0.111s] 
+[0.111s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.111s]   to tell CMake that the project requires at least <min> but has been updated
+[0.111s]   to work with policies introduced by <max> or earlier.
+[0.111s] 
+[0.111s] [0m
+[0.153s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.447s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[0.537s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.550s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.571s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.600s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.635s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.737s] -- Found rmw_implementation_cmake: 6.1.3 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.747s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.926s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.080s] -- Found octomap_msgs: 2.0.1 (/opt/ros/humble/share/octomap_msgs/cmake)
+[1.164s] [31mCMake Error at CMakeLists.txt:14 (find_package):
+[1.164s]   By not providing "Findpx4_msg.cmake" in CMAKE_MODULE_PATH this project has
+[1.164s]   asked CMake to find a package configuration file provided by "px4_msg", but
+[1.164s]   CMake did not find one.
+[1.164s] 
+[1.164s]   Could not find a package configuration file provided by "px4_msg" with any
+[1.164s]   of the following names:
+[1.164s] 
+[1.164s]     px4_msgConfig.cmake
+[1.164s]     px4_msg-config.cmake
+[1.164s] 
+[1.164s]   Add the installation prefix of "px4_msg" to CMAKE_PREFIX_PATH or set
+[1.164s]   "px4_msg_DIR" to a directory containing one of the above files.  If
+[1.164s]   "px4_msg" provides a separate development package or SDK, be sure it has
+[1.164s]   been installed.
+[1.164s] 
+[1.164s] [0m
+[1.166s] -- Configuring incomplete, errors occurred!
+[1.172s] gmake: *** [Makefile:267: cmake_check_build_system] Error 1
+[1.175s] Invoked command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble CONDA_PROMPT_MODIFIER=(drones) /usr/local/bin/cmake --build /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp -- -j10 -l10

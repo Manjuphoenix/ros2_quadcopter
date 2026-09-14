@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: drone-rrt-planner
+Version: 0.0.1
+Summary: RRT* path planning for PX4 X500 using octomap
+Home-page: UNKNOWN
+Maintainer: your_name
+Maintainer-email: you@example.com
+License: MIT
+Platform: UNKNOWN
+
+UNKNOWN
+

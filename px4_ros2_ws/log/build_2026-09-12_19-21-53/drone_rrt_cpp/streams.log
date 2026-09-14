@@ -1,0 +1,55 @@
+[0.018s] Invoking command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp': CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages /usr/local/bin/cmake --build /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp -- -j10 -l10
+[0.075s] [ 50%] [32mBuilding CXX object CMakeFiles/rrt_planner_node.dir/src/rrt_planner_node.cpp.o[0m
+[1.093s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:214[m[K,
+[1.094s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[1.094s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[1.094s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[1.094s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[1.094s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:[m[K In function ‘[01m[KPacket Eigen::internal::pload(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char][m[K’:
+[1.094s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1671:9:[m[K [01;35m[Kwarning: [m[K‘[01m[Kvoid* memcpy(void*, const void*, size_t)[m[K’ copying an object of non-trivial type ‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} from an array of ‘[01m[Kconst int8_t[m[K’ {aka ‘[01m[Kconst signed char[m[K’} [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wclass-memaccess-Wclass-memaccess]8;;[m[K]
+[1.094s]  1671 |   [01;35m[Kmemcpy(&res, from, sizeof(Packet4c))[m[K;
+[1.094s]       |   [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[1.094s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:172[m[K,
+[1.094s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[1.094s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[1.094s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[1.094s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[1.094s] [01m[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:[m[K [01;36m[Knote: [m[K‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} declared here
+[1.094s]   159 | struct [01;36m[Keigen_packet_wrapper[m[K
+[1.094s]       |        [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[1.095s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:214[m[K,
+[1.095s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[1.095s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[1.095s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[1.095s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[1.095s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:[m[K In function ‘[01m[KPacket Eigen::internal::ploadu(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char][m[K’:
+[1.095s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1716:9:[m[K [01;35m[Kwarning: [m[K‘[01m[Kvoid* memcpy(void*, const void*, size_t)[m[K’ copying an object of non-trivial type ‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} from an array of ‘[01m[Kconst int8_t[m[K’ {aka ‘[01m[Kconst signed char[m[K’} [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wclass-memaccess-Wclass-memaccess]8;;[m[K]
+[1.095s]  1716 |   [01;35m[Kmemcpy(&res, from, sizeof(Packet4c))[m[K;
+[1.095s]       |   [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[1.095s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:172[m[K,
+[1.095s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[1.095s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[1.095s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[1.095s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[1.095s] [01m[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:[m[K [01;36m[Knote: [m[K‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} declared here
+[1.095s]   159 | struct [01;36m[Keigen_packet_wrapper[m[K
+[1.095s]       |        [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[3.204s] [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:[m[K In constructor ‘[01m[KRRTPlannerNode::RRTPlannerNode()[m[K’:
+[3.204s] [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:51:14:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass rclcpp::QoS[m[K’ has no member named ‘[01m[Krelaiable[m[K’; did you mean ‘[01m[Kreliable[m[K’?
+[3.204s]    51 |     path_qos.[01;31m[Krelaiable[m[K();
+[3.204s]       |              [01;31m[K^~~~~~~~~[m[K
+[3.204s]       |              [32m[Kreliable[m[K
+[3.204s] [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:52:14:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass rclcpp::QoS[m[K’ has no member named ‘[01m[Kdurable_volatile[m[K’; did you mean ‘[01m[Kdurability_volatile[m[K’?
+[3.204s]    52 |     path_qos.[01;31m[Kdurable_volatile[m[K();
+[3.204s]       |              [01;31m[K^~~~~~~~~~~~~~~~[m[K
+[3.204s]       |              [32m[Kdurability_volatile[m[K
+[3.204s] [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:57:39:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before ‘[01m[K;[m[K’ token
+[3.204s]    57 |         std::chrono::milliseconds(200)[01;31m[K;[m[K
+[3.204s]       |                                       [01;31m[K^[m[K
+[3.204s] [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:56:44:[m[K [01;36m[Knote: [m[Kto match this ‘[01m[K([m[K’
+[3.204s]    56 |     path_publish_timer_ = create_wall_timer[01;36m[K([m[K
+[3.204s]       |                                            [01;36m[K^[m[K
+[6.092s] gmake[2]: *** [CMakeFiles/rrt_planner_node.dir/build.make:79: CMakeFiles/rrt_planner_node.dir/src/rrt_planner_node.cpp.o] Error 1
+[6.092s] gmake[1]: *** [CMakeFiles/Makefile2:153: CMakeFiles/rrt_planner_node.dir/all] Error 2
+[6.093s] gmake: *** [Makefile:146: all] Error 2
+[6.103s] Invoked command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp' returned '2': CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner:/opt/ros/humble CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages /usr/local/bin/cmake --build /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp -- -j10 -l10

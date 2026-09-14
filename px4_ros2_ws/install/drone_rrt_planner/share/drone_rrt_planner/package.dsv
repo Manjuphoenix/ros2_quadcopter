@@ -1,0 +1,6 @@
+source;share/drone_rrt_planner/hook/pythonpath.ps1
+source;share/drone_rrt_planner/hook/pythonpath.dsv
+source;share/drone_rrt_planner/hook/pythonpath.sh
+source;share/drone_rrt_planner/hook/ament_prefix_path.ps1
+source;share/drone_rrt_planner/hook/ament_prefix_path.dsv
+source;share/drone_rrt_planner/hook/ament_prefix_path.sh

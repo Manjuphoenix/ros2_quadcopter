@@ -1,0 +1,25 @@
+[1.039s] Invoking command in '/home/jarvis/Week1/px4_ros2_ws/src/px4_tf_broadcaster': CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/px4_tf_broadcaster build --build-base /home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/build install --record /home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/install.log --install-scripts $base/lib/px4_tf_broadcaster --single-version-externally-managed install_data
+[1.215s] running egg_info
+[1.219s] writing ../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/PKG-INFO
+[1.219s] writing dependency_links to ../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/dependency_links.txt
+[1.220s] writing entry points to ../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/entry_points.txt
+[1.220s] writing requirements to ../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/requires.txt
+[1.220s] writing top-level names to ../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/top_level.txt
+[1.220s] reading manifest file '../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/SOURCES.txt'
+[1.221s] writing manifest file '../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info/SOURCES.txt'
+[1.222s] running build
+[1.222s] running build_py
+[1.222s] copying px4_tf_broadcaster/tf_broadcaster.py -> /home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/build/lib/px4_tf_broadcaster
+[1.222s] running install
+[1.222s] running install_lib
+[1.222s] copying /home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/build/lib/px4_tf_broadcaster/tf_broadcaster.py -> /home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages/px4_tf_broadcaster
+[1.223s] byte-compiling /home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages/px4_tf_broadcaster/tf_broadcaster.py to tf_broadcaster.cpython-310.pyc
+[1.224s] running install_data
+[1.224s] running install_egg_info
+[1.227s] removing '/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages/px4_tf_broadcaster-0.0.0-py3.10.egg-info' (and everything under it)
+[1.227s] Copying ../../build/px4_tf_broadcaster/px4_tf_broadcaster.egg-info to /home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages/px4_tf_broadcaster-0.0.0-py3.10.egg-info
+[1.228s] running install_scripts
+[1.244s] Installing px4_waypoint_follower script to /home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/px4_tf_broadcaster
+[1.244s] Installing tf_broadcaster script to /home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/px4_tf_broadcaster
+[1.244s] writing list of installed files to '/home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/install.log'
+[1.269s] Invoked command in '/home/jarvis/Week1/px4_ros2_ws/src/px4_tf_broadcaster' returned '0': CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/px4_tf_broadcaster/lib/python3.10/site-packages:/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_planner/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/px4_tf_broadcaster build --build-base /home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/build install --record /home/jarvis/Week1/px4_ros2_ws/build/px4_tf_broadcaster/install.log --install-scripts $base/lib/px4_tf_broadcaster --single-version-externally-managed install_data

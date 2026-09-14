@@ -1,0 +1,4 @@
+[console_scripts]
+px4_waypoint_follower = drone_rrt_planner.px4_waypoint_follower:main
+tf_broadcaster = px4_tf_broadcaster.tf_broadcaster:main
+

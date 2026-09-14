@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="3">
+
+  <name>px4_tf_broadcaster</name>
+  <version>0.0.0</version>
+
+  <description>PX4 to ROS TF broadcaster</description>
+
+  <maintainer email="jarvis@example.com">jarvis</maintainer>
+
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>px4_msgs</depend>
+  <depend>tf2_ros</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+
+</package>
