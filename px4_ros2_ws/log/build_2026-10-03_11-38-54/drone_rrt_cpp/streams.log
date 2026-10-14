@@ -1,0 +1,59 @@
+[0.008s] Invoking command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp': AMENT_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/opt/ros/humble CONDA_PROMPT_MODIFIER=(drones) LD_LIBRARY_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:${PYTHONPATH} /usr/local/bin/cmake --build /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp -- -j10 -l10
+[0.047s] [ 50%] [32mBuilding CXX object CMakeFiles/rrt_planner_node.dir/src/rrt_planner_node.cpp.o[0m
+[0.965s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:214[m[K,
+[0.965s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[0.965s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[0.965s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[0.965s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[0.965s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:[m[K In function ‘[01m[KPacket Eigen::internal::pload(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char][m[K’:
+[0.965s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1671:9:[m[K [01;35m[Kwarning: [m[K‘[01m[Kvoid* memcpy(void*, const void*, size_t)[m[K’ copying an object of non-trivial type ‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} from an array of ‘[01m[Kconst int8_t[m[K’ {aka ‘[01m[Kconst signed char[m[K’} [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wclass-memaccess-Wclass-memaccess]8;;[m[K]
+[0.965s]  1671 |   [01;35m[Kmemcpy(&res, from, sizeof(Packet4c))[m[K;
+[0.965s]       |   [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[0.965s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:172[m[K,
+[0.965s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[0.966s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[0.966s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[0.966s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[0.966s] [01m[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:[m[K [01;36m[Knote: [m[K‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} declared here
+[0.966s]   159 | struct [01;36m[Keigen_packet_wrapper[m[K
+[0.966s]       |        [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[0.966s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:214[m[K,
+[0.966s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[0.966s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[0.967s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[0.967s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[0.967s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:[m[K In function ‘[01m[KPacket Eigen::internal::ploadu(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char][m[K’:
+[0.967s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1716:9:[m[K [01;35m[Kwarning: [m[K‘[01m[Kvoid* memcpy(void*, const void*, size_t)[m[K’ copying an object of non-trivial type ‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} from an array of ‘[01m[Kconst int8_t[m[K’ {aka ‘[01m[Kconst signed char[m[K’} [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wclass-memaccess-Wclass-memaccess]8;;[m[K]
+[0.967s]  1716 |   [01;35m[Kmemcpy(&res, from, sizeof(Packet4c))[m[K;
+[0.967s]       |   [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[0.967s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:172[m[K,
+[0.967s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49[m[K,
+[0.967s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/StateSpace.h:43[m[K,
+[0.967s]                  from [01m[K/usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40[m[K,
+[0.967s]                  from [01m[K/home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2[m[K:
+[0.967s] [01m[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:[m[K [01;36m[Knote: [m[K‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} declared here
+[0.967s]   159 | struct [01;36m[Keigen_packet_wrapper[m[K
+[0.967s]       |        [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[8.563s] [100%] [32m[1mLinking CXX executable rrt_planner_node[0m
+[9.100s] [100%] Built target rrt_planner_node
+[9.107s] Invoked command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp' returned '0': AMENT_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/opt/ros/humble CONDA_PROMPT_MODIFIER=(drones) LD_LIBRARY_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:${PYTHONPATH} /usr/local/bin/cmake --build /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp -- -j10 -l10
+[9.109s] Invoking command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp': AMENT_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/opt/ros/humble CONDA_PROMPT_MODIFIER=(drones) LD_LIBRARY_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:${PYTHONPATH} /usr/local/bin/cmake --install /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp
+[9.110s] -- Install configuration: ""
+[9.111s] -- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/lib/drone_rrt_cpp/rrt_planner_node
+[9.120s] -- Set non-toolchain portion of runtime path of "/home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/lib/drone_rrt_cpp/rrt_planner_node" to ""
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/ament_index/resource_index/package_run_dependencies/drone_rrt_cpp
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/ament_index/resource_index/parent_prefix_path/drone_rrt_cpp
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/ament_prefix_path.sh
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/ament_prefix_path.dsv
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/path.sh
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/environment/path.dsv
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.bash
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.sh
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.zsh
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/local_setup.dsv
+[9.121s] -- Installing: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/package.dsv
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/ament_index/resource_index/packages/drone_rrt_cpp
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/cmake/drone_rrt_cppConfig.cmake
+[9.121s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/cmake/drone_rrt_cppConfig-version.cmake
+[9.122s] -- Up-to-date: /home/jarvis/Week1/px4_ros2_ws/install/drone_rrt_cpp/share/drone_rrt_cpp/package.xml
+[9.123s] Invoked command in '/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp' returned '0': AMENT_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs:/opt/ros/humble CONDA_PROMPT_MODIFIER=(drones) LD_LIBRARY_PATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/jarvis/Week1/px4_ros2_ws/install/px4_msgs/lib/python3.10/site-packages:${PYTHONPATH} /usr/local/bin/cmake --install /home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp

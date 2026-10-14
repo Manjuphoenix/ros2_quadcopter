@@ -184,6 +184,15 @@ rrt_planner_node: /opt/ros/humble/lib/librosidl_runtime_c.so
 rrt_planner_node: /opt/ros/humble/lib/librcutils.so
 rrt_planner_node: /usr/lib/aarch64-linux-gnu/libpython3.10.so
 rrt_planner_node: /home/jarvis/anaconda3/envs/drones/lib/libpython3.10.so
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libgz-transport13.so.13.6.0
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libuuid.so
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libuuid.so
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libgz-msgs10.so.10.4.0
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libgz-math7.so.7.6.0
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libgz-utils2.so.2.2.1
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libtinyxml2.so
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libtinyxml2.so
+rrt_planner_node: /usr/lib/aarch64-linux-gnu/libprotobuf.so
 rrt_planner_node: CMakeFiles/rrt_planner_node.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/jarvis/Week1/px4_ros2_ws/build/drone_rrt_cpp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable rrt_planner_node"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/rrt_planner_node.dir/link.txt --verbose=$(VERBOSE)

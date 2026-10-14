@@ -14,6 +14,9 @@ find_package(PkgConfig REQUIRED)
 find_package(px4_msgs REQUIRED)
 pkg_check_modules(OMPL REQUIRED ompl)
 
+find_package(gz-transport13 REQUIRED)
+find_package(gz-msgs10 REQUIRED)
+
 add_executable(rrt_planner_node src/rrt_planner_node.cpp)
 
 ament_target_dependencies(rrt_planner_node
@@ -33,6 +36,8 @@ target_link_directories(rrt_planner_node PUBLIC
 target_link_libraries(rrt_planner_node
   ${OMPL_LIBRARIES}
   ${OCTOMAP_LIBRARIES}
+  gz-transport13::core
+  gz-msgs10::core
 )
 
 install(TARGETS

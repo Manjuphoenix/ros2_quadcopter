@@ -1,0 +1,57 @@
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+CMake Warning at CMakeLists.txt:20 (add_executable):
+  Cannot generate a safe runtime search path for target rrt_planner_node
+  because files in some directories may conflict with libraries in implicit
+  directories:
+
+    runtime library [libpython3.10.so.1.0] in /usr/lib/aarch64-linux-gnu may be hidden by files in:
+      /home/jarvis/anaconda3/envs/drones/lib
+    runtime library [libuuid.so.1] in /usr/lib/aarch64-linux-gnu may be hidden by files in:
+      /home/jarvis/anaconda3/lib
+      /home/jarvis/anaconda3/envs/drones/lib
+
+  Some of these libraries may not be found correctly.
+
+
+In file included from /usr/include/eigen3/Eigen/Core:214,
+                 from /usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49,
+                 from /usr/include/ompl-1.5/ompl/base/StateSpace.h:43,
+                 from /usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40,
+                 from /home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2:
+/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h: In function ‘Packet Eigen::internal::pload(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char]’:
+/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1671:9: warning: ‘void* memcpy(void*, const void*, size_t)’ copying an object of non-trivial type ‘Eigen::internal::Packet4c’ {aka ‘struct Eigen::internal::eigen_packet_wrapper<int, 2>’} from an array of ‘const int8_t’ {aka ‘const signed char’} [-Wclass-memaccess]
+ 1671 |   memcpy(&res, from, sizeof(Packet4c));
+      |   ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/eigen3/Eigen/Core:172,
+                 from /usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49,
+                 from /usr/include/ompl-1.5/ompl/base/StateSpace.h:43,
+                 from /usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40,
+                 from /home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2:
+/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8: note: ‘Eigen::internal::Packet4c’ {aka ‘struct Eigen::internal::eigen_packet_wrapper<int, 2>’} declared here
+  159 | struct eigen_packet_wrapper
+      |        ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/eigen3/Eigen/Core:214,
+                 from /usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49,
+                 from /usr/include/ompl-1.5/ompl/base/StateSpace.h:43,
+                 from /usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40,
+                 from /home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2:
+/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h: In function ‘Packet Eigen::internal::ploadu(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char]’:
+/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1716:9: warning: ‘void* memcpy(void*, const void*, size_t)’ copying an object of non-trivial type ‘Eigen::internal::Packet4c’ {aka ‘struct Eigen::internal::eigen_packet_wrapper<int, 2>’} from an array of ‘const int8_t’ {aka ‘const signed char’} [-Wclass-memaccess]
+ 1716 |   memcpy(&res, from, sizeof(Packet4c));
+      |   ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/eigen3/Eigen/Core:172,
+                 from /usr/include/ompl-1.5/ompl/base/ProjectionEvaluator.h:49,
+                 from /usr/include/ompl-1.5/ompl/base/StateSpace.h:43,
+                 from /usr/include/ompl-1.5/ompl/base/spaces/RealVectorStateSpace.h:40,
+                 from /home/jarvis/Week1/px4_ros2_ws/src/drone_rrt_cpp/src/rrt_planner_node.cpp:2:
+/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8: note: ‘Eigen::internal::Packet4c’ {aka ‘struct Eigen::internal::eigen_packet_wrapper<int, 2>’} declared here
+  159 | struct eigen_packet_wrapper
+      |        ^~~~~~~~~~~~~~~~~~~~

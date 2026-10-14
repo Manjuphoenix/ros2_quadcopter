@@ -1,0 +1,54 @@
+{
+	"cmake" : 
+	{
+		"generator" : 
+		{
+			"multiConfig" : false,
+			"name" : "Unix Makefiles"
+		},
+		"paths" : 
+		{
+			"cmake" : "/home/jarvis/Downloads/cmake-3.31.12-linux-aarch64/bin/cmake",
+			"cpack" : "/home/jarvis/Downloads/cmake-3.31.12-linux-aarch64/bin/cpack",
+			"ctest" : "/home/jarvis/Downloads/cmake-3.31.12-linux-aarch64/bin/ctest",
+			"root" : "/home/jarvis/Downloads/cmake-3.31.12-linux-aarch64/share/cmake-3.31"
+		},
+		"version" : 
+		{
+			"isDirty" : false,
+			"major" : 3,
+			"minor" : 31,
+			"patch" : 12,
+			"string" : "3.31.12",
+			"suffix" : ""
+		}
+	},
+	"objects" : 
+	[
+		{
+			"jsonFile" : "codemodel-v2-4352003c38f41796f0f6.json",
+			"kind" : "codemodel",
+			"version" : 
+			{
+				"major" : 2,
+				"minor" : 7
+			}
+		}
+	],
+	"reply" : 
+	{
+		"client-colcon-cmake" : 
+		{
+			"codemodel-v2" : 
+			{
+				"jsonFile" : "codemodel-v2-4352003c38f41796f0f6.json",
+				"kind" : "codemodel",
+				"version" : 
+				{
+					"major" : 2,
+					"minor" : 7
+				}
+			}
+		}
+	}
+}

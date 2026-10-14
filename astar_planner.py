@@ -325,20 +325,6 @@ def _enu_to_grid(x_east, y_north):
     return y_north, x_east
 
 
-def enu_to_grid(x_east, y_north):
-    """Public alias of _enu_to_grid — e.g. for converting an RViz-clicked
-    goal (published in a REP-105 ENU "map" frame) into this module's
-    (North, East) grid frame."""
-    return _enu_to_grid(x_east, y_north)
-
-
-def grid_to_enu(x_north, y_east):
-    """Inverse of enu_to_grid — this module's (North, East) grid frame to
-    a REP-105 ENU "map" frame (East, North), e.g. for publishing TF or
-    nav_msgs/Path so RViz displays them correctly."""
-    return y_east, x_north
-
-
 class _RawObstacle:
     """An obstacle in its native SDF (ENU) frame, before grid conversion."""
 

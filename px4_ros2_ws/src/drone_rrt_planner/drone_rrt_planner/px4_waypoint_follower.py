@@ -44,6 +44,11 @@ class PX4WaypointFollower(Node):
             VehicleLocalPosition, '/fmu/out/vehicle_local_position_v1', self.position_cb, px4_qos)
         self.path_sub = self.create_subscription(
             PoseArray, '/rrt_path', self.path_cb, path_qos)
+            
+        self.declare_parameter('spawn_x', 0.0)
+        self.declare_parameter('spawn_y', 0.0)
+        self.spawn_x = self.get_parameter('spawn_x').value
+        self.spawn_y = self.get_parameter('spawn_y').value
 
         # State
         self.waypoints = []          # list of (x, y, z) in NED, from /rrt_path
@@ -103,7 +108,13 @@ class PX4WaypointFollower(Node):
         """
         
     def path_cb(self, msg):
-        new_waypoints = [(p.position.x, p.position.y, -p.position.z) for p in msg.poses]
+        # new_waypoints = [(p.position.x, p.position.y, -p.position.z) for p in msg.poses]
+        # /rrt_path is ENU (x=East, y=North, z=Up) -> PX4 NED (x=North, y=East, z=Down)
+        # new_waypoints = [(p.position.y, p.position.x, -p.position.z) for p in msg.poses]
+        
+        new_waypoints = [(p.position.y - self.spawn_y,    # North = world y - spawn y
+                  p.position.x - self.spawn_x,    # East  = world x - spawn x
+                  -p.position.z) for p in msg.poses]
 
         # Compare against the last RAW path we received, not the takeoff-modified execution list
         if new_waypoints == getattr(self, 'last_raw_waypoints', None):
